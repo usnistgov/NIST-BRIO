@@ -76,4 +76,4 @@ in. ./build... -i sandbox  will build and install the framework inthe folder
 sandbox. The installed code will be in the embedded local filder.
 
 ## Contact &  ???
-For Questions and/or BUG reports please email to bgpsec-dev@nist.gov
+For Questions and/or BUG reports please email to itrg-contact@list.nist.gov
