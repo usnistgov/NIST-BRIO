@@ -1,0 +1,14 @@
+#!/bin/bash
+
+#
+# This file belongs to the SRxCryptoAPI testbed. The certificates/keys 
+# generated here are for test purpose only and might not follow the BGPSEc 
+# certificate structure.
+# They are not intended to be used elsewhere than the test bed.
+# 
+# DEPRECATED - will be replaced in the next version
+
+EXT_CSR="csr"
+
+openssl req -in $1.$EXT_CSR -text
+

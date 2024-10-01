@@ -1,0 +1,112 @@
+More details on changes are scripted in the files itself.
+===========================================================
+Version 0.3.0.6 - July 2024
+  - Fixed bug in deleting keys from key_storage
+Version 0.3.0.5 - July 2024
+  - Re-ran autoreconf to enable being compiled on Rocky 9
+Version 0.3.0.4 - Oct 2021
+  - Fixed spec file for rpm generation
+Version 0.3.0.3 - May 2021
+  - Moved the configuration from from hard coded to be a template
+    file that is configured the build process. This allows to point
+    to the proper key vault folder.
+  - Properly deprecated option -t in crypto tester
+Version 0.3.0.2 - March 2021
+  - Updated project email address.
+Version 0.3.0.1 - July 2020
+  - Fixed errors in dates.
+  - Updated email address
+  - Updated spec file.
+Version 0.3.0.0 - June 2020
+  - !!! This version is not backwards compatible to V0.2 !!!
+  - Fixed m4 scripts regarding OpenSSL header file location
+  - Modified sign method parameters to allow signing more than one update 
+    message digest. This allows to generate all signatures of an update required
+    for each signature block at once.
+  - Modified the data structure handed into the sign method to make it more 
+    easy to understand. Removed ambiguous attribute declarations.
+  - Added More documentation on how to use the API
+  - Added more functionality
+  - Removed all "merged" comments to make future merging easier
+Version 0.2.0.7 - November 2018
+  - Fixed OpenSSL deprecation issues (Needed for Ubuntu 18 platforms)
+  - Added alternative library (.so) configuration in sample configuration
+Version 0.2.0.6 - April 2018
+  - Fixed incorrect entry in Changelog for 0.2.0.5
+  - Fixed M4 Script for OpenSSL
+Version 0.2.0.5 - October   2017
+  - Added .a into configuration.
+Version 0.2.0.4 - September 2017
+  - Moved Version 0.2 into branch to be able to address 0.2 related bugs. This
+    will include bugs of SCA 0.2 identified within trunk development of version 
+    0.3 and later that might need addressing in version 0.2
+  - Fixed some BUGS
+Version 0.2.0.3 - July - 2017
+  - Fixed some bugs
+  - Added some defines to the header file
+  - Added init string to test lib to allow some runtime debugging
+  - Fixed default assignment if configuration method mapping is incomplete
+Version 0.2.0.2 - November - 2016
+  - Fixed some bugs
+  - Added functionality to print bgpsec data using the testlib.
+Version 0.2.0.1 - July - 2016
+  - Bug fixes
+Version 0.2.0.0 - May/June - 2016
+  - Redesigned the API - This API is incompatible with any 0.1.x version.
+    * Modified the key generation tools in such that they also generate the 
+      key storage structure to be compatible with BIRD reference implementation.
+    * All functions are mandatory to be implemented
+    * Functions only return two values and more detailed information are 
+      returned using a status flag.
+    * Only one validate and one sign method - Keys are not passed anymore during
+      the validation / sign call - requires pre-registration of keys.
+    * API returns the validation hash as as the signature buffer. To free these
+      allocated memory the API provides the appropriate free methods.
+    * Added capability to set a debug level.
+    * Removed requirement to generate API specific BGPSec Path data structure,
+      validation will be performed on the BGPSEC path attribute as it is 
+      specified in the bgpsec draft (future RFC).
+  - Modules MUST provide key management (private / public).
+  - API BGPSec_OpenSSL is rewritten to reflect the changes in digest generation 
+    as well as API function changes. 
+    * Internal key storage is rewritten and moved into its own source
+Version 0.1.3.0 - March-April 2016
+  - modified structure BGPSecKey to be packed
+  - added prefix structure SCA_Prefix
+Version 0.1.2.2 - March 2016
+  - Modified memory management in sca_generateMSG1 and sca_generateMSG2 to 
+    prevent a memory leak.
+  - Added NULL check to srxCryptoUnbind
+  - Modified configure.ac merging code to distinguish between 32 and 64 bit
+Version 0.1.2.1 - January-March 2016
+  - Added init method (missing in 0.1.2.0)
+  - Fixed bugs
+Version 0.1.2.0 - September-December 2015
+  - Moved the installed libraries into lib/srx or lib64/srx. Same for the header
+    file srxcryptoapi.h - It is not located in srx/srxcryptoapi.h
+  - Changed --enable settings (testlib and bgpsec-openssl) to be --without 
+    settings. Components are installed by default.
+  - Added --without-la-lib which is used for RPM generation. This setting is 
+    used in spec file %configure statement to not include .a and .la libraries
+    in rpm file.
+  _ Restructured initialization code
+  - Removed term_debug and added sca_getCurrentLogLevel
+  - Added configuration for key file extension for backwards compatibility
+  - Modified the key generation to not only produce the PEM encoded key.
+    Newly der encoded keys are stores and xxxxx.der
+  - Use the DER encoded key rather than the PEM encoded one.
+  - Added key storage to BGPSecOpenSSL implementation.
+  - The verify and sign methods now take the DER encoded keys.
+  _ Added functionality to NOT load functions the plugin reports as not 
+    supported - regardless if they are configured or not.
+    Example: !isExtended -> extValidate and all public key functions are not 
+                            loaded
+  - Modified the qsrx-xxx tools to only install keys not already installed.
+    Kept backwards compatibility with key filenames. PEM=.key, DER=.der
+    The PEM keys are used for srxCryptoAPI 0.1.1.1, all others will use the
+    DER encoding.
+Version 0.1.1.1 - Arpil 2015
+  - Fixed bug in configuration that could cause memory issues
+  - Fixed linking problems on Ubuntu systems
+Version 0.1.1.0 - March 2015
+  - Initial Release

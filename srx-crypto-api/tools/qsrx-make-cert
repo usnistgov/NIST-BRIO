@@ -1,0 +1,77 @@
+#!/bin/bash
+
+#
+# This file belongs to the SRxCryptoAPI testbed. The certificates/keys 
+# generated here are for test purpose only and might not follow the BGPSEc 
+# certificate structure.
+# They are not intended to be used elsewhere than the test bed.
+#
+# They Certificate will be generated from the PEM file. The SRxCryptoAPI 
+# uses the key file though.
+#
+
+EXT_PEM="pem"
+EXT_CERT="cert"
+EXT_CSR="csr"
+
+if [ "$1" == "--cnf" ] ; then
+  echo "Parameter changed to be --conf instead."
+  exit 1
+fi
+
+if [ "$1" == "--conf" ] ; then
+  shift
+  echo "Set home for qsrx-router-key.conf to '$1'"
+  QSRX_CONF_HOME="$1"
+  shift
+fi
+
+
+if [ "$QSRX_CONF_HOME" == "" ] ; then
+  QSRX_CONF_HOME="/etc"
+fi
+
+QSRX_CONF_FILE=$QSRX_CONF_HOME/qsrx-router-key.conf
+QSRX_VIEW=qsrx-view-subject
+QSRX_MAKE_KEY=qsrx-make-key
+QSRX_SERIAL=20140220001
+
+if [ "$1" == "" ] || [ ! -e $QSRX_CONF_FILE ] ; then
+  if [ ! -e $QSRX_CONF_FILE ] ; then
+    echo "File $QSRX_CONF_FILE not found!"
+  fi
+  echo "call $0 [--conf <location of qsrx-router-key.conf> ] <keyname>"
+  exit 1
+fi
+
+which $QSRX_VIEW > /dev/null 2>&1
+if [ $? -eq 1 ] ; then
+  echo "Make sure '$QSRX_VIEW' and '$QSRX_MAKE_KEY' are in the executable path"
+  exit 1
+fi
+
+
+if [ -e "$1.$EXT_PEM" ] ; then
+  # Create Certificate Request
+  echo "Create Certificate Request for $1..."
+  openssl req -new -batch -config $QSRX_CONF_FILE -key $1.$EXT_PEM -out $1.$EXT_CSR
+  SUBJECT=$($QSRX_VIEW $1)
+  echo "Subject='$SUBJECT'"
+  openssl req -new -batch -subj /CN=$SUBJECT -config $QSRX_CONF_FILE -key $1.$EXT_PEM -out $1.$EXT_CSR
+  echo "Request created."
+
+  # Create Certificate
+  echo "Create Certificate for $1"
+  openssl x509 -sha256 -extfile $QSRX_CONF_FILE -extensions bgpsec_router_ext -set_serial $QSRX_SERIAL -in $1.$EXT_CSR -outform DER -out $1.$EXT_CERT -req -signkey $1.$EXT_PEM -days 365
+
+  echo "Create BIRD compatible public key $1.$SUBJECT.0.key"
+  openssl x509 -inform DER -noout -pubkey -in $1.$EXT_CERT | openssl pkey -pubin -outform DER -out $1.$SUBJECT.0.key
+
+  # Remove certificate request
+  rm -f $1.$EXT_CSR
+else
+  echo "PEM formated Key file $1.$EXT_PEM not found!"
+  echo "Generate a key using '$QSRX_MAKE_KEY $1'"
+  exit 2
+fi
+

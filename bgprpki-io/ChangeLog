@@ -1,0 +1,49 @@
+Version 0.3.0.0
+  * Added library check for libreadline.
+  * Added RPKI cache from srx-server to this code base using the name brio_cache
+  * Changed from bgpsecio (BIO) into brio (BGP-RPKI-IO).
+  * Renamed bio-traffic.sh to brio-traffic.sh and mrt-to-bio.sh to mrt-to-brio.sh
+  * Removed deprecation tag in BGPHeader.[c|h]
+  * Fixed compiler warnings.
+Version 0.2.2.1
+  * Fixed speller in message when using parameter -C
+Version 0.2.2.0
+  * Updated to add ROCKY 9 Compatibility.
+  * Added switch to suppress new warning by replacing it with a smaller info
+Version 0.2.1
+  * Modified CAPI statistics regarding BGP-4 and sign error. Also fixed segmentation 
+    fault if DROP or BGP-4 is selected in CAPI mode. 
+  * Fixed generation of configuration file - removed bug and renumbered ASNs
+  * Fixed incorrect k value printout when showing the program syntax
+  * Fixed segmentation fault in update scripting as wella s adding regexp to show 
+    how AS_SET is scripted and forces AS_SET containing updates to be BGP4 only
+  * Removed data folder, this is now provided by the examples project. 
+  * Fixed project contact email and updated writing from BGPSEC-IO to BGPsec-IO
+  * Fixed bug while creating updates using pipe and fixed spellers.
+  * Fixed configuration value key-volt to key-vault. 
+  * Fixed Segmentation Fault when passing updates using the parameter -u <update>
+Version 0.2.0
+  * Fixed segmentation fault when receive buffer needs reallocation.
+  * Fixed memory leaks that prevented BIO from sending more than 115 BGP updates. 
+  * Added printing of simple on-line form for BGPsec_Path and MP_NLRI. 
+  * Added instrumentation to detect BGP/BGPsec convergence of BGP session
+  * Added sending of aggregated BGP 4 paths.
+  * Added prefix packing for BGP 4 updates. 
+  * Fixed errors in auto generated second session configuration
+  * Added capability to script updates as BGP4 only using the path prefix B4: <prefix>, "B4 <path>"
+  * Changed from interface binding to IP binding to prevent the need of elevated user permissions.
+  * Modified capabilities code and path attribute code to IANA assigned values
+  * Fixed next hop generation in GEN-B mode.
+  * IPv6 BGPsec updates require capability negotiation prior sending IP6 updates.
+  * Fixed generation of BGP-4 Updates with more than 255 ASNs in AS_PATH attribute.
+  * Added --enable-testvector and --enable-print-crypto
+  * Added some features that facilitate the generation of test vector printout.
+  * BIO did not use k as advertised for BIO-K1. It used a valid k but not the one from the RFC. 
+    Modified code in such that it now uses the correct K and instead of using a define string 
+    for printout, each printout will be generated from the byte array associated with the 
+    internal byte array.
+  * Added print filter depending on UPDATE types
+  * Added CFLAGS setting -DPRINT_CRYPTO to allow printing the degest and signature during 
+    signing period.
+  * Added signature creation using a fixed pre-determined "k" (RFC 6979 pg.33). Also prepared 
+    usage of CAPI for signing. Leter one is not done yet.
