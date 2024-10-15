@@ -1,4 +1,19 @@
-This folder contains NIST BRIO Software Suite Vtrunk
+This folder contains NIST BRIO Software Suite Vb6.4.1
+ * srx-crypto-api V0.3.0.6_release
+ * bgprpki-io version_b0.3.0.1
+
+Comments for this software package:
+===================================
+* srx-crypto-api 0.3.0.6_release developed and tested under CentOS / Rocky 9.
+  - requires gcc
+  - requires libconfig-devel
+  - requires openssl-devel
+  - requires uthash-devel
+* bgprpki-io version_b0.3.0.1 developed and tested under Rocky 9.
+  - requires gcc
+  - requires libconfig-devel
+  - requires openssl-devel
+  - requires readline-devel
 
 -------------------------------------------------------------------------------
-Packaged by BGP-SRx Software Suite Bundler V9.0.0
+Packaged by BGP-SRx Software Suite Bundler V9.0.1

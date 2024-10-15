@@ -1,4 +1,5 @@
 ACLOCAL_AMFLAGS = -I m4
+AUTOMAKE_OPTIONS = foreign
 
 .PHONY: distclean-local rpms srcrpm
 

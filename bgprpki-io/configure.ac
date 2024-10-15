@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.63])
-AC_INIT([brio], [b0.3.0.0], [itrg-contact@list.nist.gov])
+AC_INIT([brio], [b0.3.0.1], [itrg-contact@list.nist.gov])
 AM_INIT_AUTOMAKE([-Wall -Werror -Wno-portability subdir-objects])
 
 # AC_CONFIG_SRCDIR specifies a file that the configuration checks for existence.
