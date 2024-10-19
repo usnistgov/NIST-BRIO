@@ -1,24 +1,42 @@
 # BGP-RPKI-IO (BRIO)
-BGP-RPKI-IO (BRIO) is a collection of tools that allow to generate synthetic 
-BGP, BGPsec, and RPKI payloads such as ROA, BGPSec Key, and ASPA via the RPKI 
-to Router protocol RFC8210 up to RFC 8210bis-15 to be send to router clients. 
+*** dougm - in this seciton talk about the set of BRIO tools in general.  Then below talk about each tool/mode of use ***
+BGP-RPKI-IO (BRIO) is a collection of tools that enables users to generate synthetic
+data and protocol exchanges to test router implementations of emerging BGP security
+and resilience technologies. BRIO scripts can generate and recieve both BGP and BGPsec 
+test traffic as well as RPKI-to-Router [(RFC8210)][RFC8210-v2] protocol exchanges.
 
-The BRIO Cache (brio_cache) simulates an RPKI cache that allows to script RPKI 
-payloads for route origin validation, bgpsec path validation and aspa vaidation. 
+*** dougm! - I suggest we use BRIO as the name of the set of tools.  For consistency I would name the other parts as follows ***
+ + BRIO - tool set
+ + BRIO Traffic Generator (BRIO-TG)
+ + BRIO Traffic Sink (BRIO-TS)
+ + BRIO RPKI Cache (BRIO-RC)
 
+BRIO also enables users to script RPKI data and invents icluding the additional / removal of: ROA, BGPSec Key, and ASPA RPKI objects.
 
-## Traffic Generator "brio"
-The BGP traffic generator (brio) can produce BGP-4 traffic as well as fully 
-end to end signed BGPSec traffic. Furthermore it allows to test BGPsec crypto
+The combination of BRIO tools can be used to test
+implementations of BGP security and resilience mechanisms including: route origin validation (ROV) [RFC8610], BGPsec path validation [(RFC8205)][RFC8205] and ASPA PATH verification [ID-aspa-validation]. 
+
+### Supported Specifications
+The BRIO tools support and conform to the following specifications:
+
+*** dougm! - list all specifications supported by the tool. ***
+
+[RFC8210-v2]: https://datatracker.ietf.org/doc/draft-ietf-sidrops-8210bis/15/ "The Resource Public Key Infrastructure (RPKI) to Router Protocol, Version 2 draft-ietf-sidrops-8210bis-15"
+
+[RFC8205]: https://datatracker.ietf.org/doc/html/rfc8205 "BGPsec Protocol Specification"
+
+## BRIO Traffic Generator (BRIO-TG)
+The BGP traffic generator (BRIO-TG) can peer with a router under test using 
+either BGP-4 traffic or BGPSec traffic. Furthermore it allows to test BGPsec crypto
 algorithms as long as they implement the SRxCryproAPI interface. This allows to 
 create performance tests. 
 
-In addition BRIO allows to receive BGP and BGPSec UPDATES and dump them into
+In addition BRIO-TG allows to receive BGP and BGPSec UPDATES and dump them into
 text files.
 
-The following Modes are supported in this version:
+The following Modes are supported in this version: ***dougm? - is BGPsec a version? or a mode of use?***
 
-1) BGP  : This mode generates BGP updates containing the BGPsec path attribute
+1) BGP  : This mode generates BGP updates containing the BGPsec path attribute ***dougm? - what about BGP-4?***
 
 2) GEN-x: This mode allows to pre-generate bgpsec signed updates for performance
           testing.
@@ -33,12 +51,12 @@ configuration file.
 
 **Update Format:   "\<prefix> [ , ( \<ASN>[ [ p | P ] \<pCount> ] )\* ]"**
 
-|    |    |    |   |
-| -- | -- | -- | --|
-| Examples: | BGP-RPKI-IO as ASN 10
-| | "10.0.10.0/24"          | -> | path: 10  
-| | "10.0.10.0/24, 20 30"   | -> | path: 10 20 30  
-| | "10.0.10.0/24, 20p3 30" | -> | path: 10 20 20 20 30  
+|           |                         |     |                      |
+| --------- | ----------------------- | --- | -------------------- |
+| Examples: | BGP-RPKI-IO as ASN 10   |
+|           | "10.0.10.0/24"          | ->  | path: 10             |
+|           | "10.0.10.0/24, 20 30"   | ->  | path: 10 20 30       |
+|           | "10.0.10.0/24, 20p3 30" | ->  | path: 10 20 20 20 30 |
 
 ### Order of loading updates
 Updates are loaded in the following manner:  
@@ -56,21 +74,20 @@ to pre-load all keys for processing. For more info on keys see the SRxCryptoAPI
 For all different settings, please call **``brio -?``** or check the 
 configuration file.
 
-### BRIO as traffic sink
-It is possible to use ```brio``` as traffic receiver. All BGP / BGPSec traffic 
+### BRIO Traffic Sink (BRIO-TS)
+It is possible to use ```brio``` as BGP traffic receiver. All BGP / BGPSec traffic 
 can be printed out on receive in two forms, simple and regular. The regular form 
 follows the Wireshark format where as the simple form presents one PDU per line.
 
-## BRIO_CACHE
-BRIO Cache is the RPKI Cache Test Harness. This software allows to produce 
-synthetic RPKI data and timed / event driven data flow. This means that RPKI
-payloads can be pre-scripted announcements and withdrawals. 
+## BRIO RPKI Cache (BRIO-RC)
+BRIO-RC is a RPKI cache test harness. This software allows to produce 
+synthetic RPKI data with timed, event driven, addition/removal of RPKI objects. This means that RPKI-to-RTR payloads can be pre-scripted announcements and withdrawals. 
 
-## Requirements
-The BRIO Framework is tested on Linux Rocky 9 installations. 
+## Deployment Requirements
+The BRIO Framework has been tested on Linux Rocky 9 installations. 
 
 ## Installation
-To compile and build BRIO just call the included build shell script. This 
+To compile and build BRIO use the included build shell script. This 
 script allows to specify the folder where the software package will be installed
 in. ./build... -i sandbox  will build and install the framework in the folder
 sandbox. The installed code will be in the embedded local folder.
