@@ -22,10 +22,15 @@
  *
  * Provides the BGP Final State Machine
  * 
- * @version 0.2.1.0
+ * @version 0.3.0.1
  * 
  * ChangeLog:
  * -----------------------------------------------------------------------------
+ *  0.3.0.1 - 2024/12/11 - oborchert
+ *            * Added define code for header exclusion if OS_UBUNTU is defined 
+ *            * Added missing 0.3.0.0 log entry.
+ *  0.3.0.0 - 2024/09/30 - oborchert
+ *            * Added define code for header exclusion if OS_ROCKY is defined 
  *  0.2.1.0 - 2018/01/12 - oborchert
  *            * Updated code to reflect changes in structure of BGP_SessionConf 
  *  0.2.0.21- 2018/06/08 - oborchert
@@ -53,7 +58,7 @@
 #include <unistd.h>
 #include <signal.h>
 #include <errno.h>
-#ifndef OS_ROCKY 
+#if !defined(OS_ROCKY) && !defined(OS_UBUNTU)  
   #include <bits/signum.h>
 #endif
 #include "bgp/BGPFinalStateMachine.h"

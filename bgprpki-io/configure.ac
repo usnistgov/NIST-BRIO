@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.63])
-AC_INIT([brio], [b0.3.0.1], [itrg-contact@list.nist.gov])
+AC_INIT([brio_tg], [b0.7.0.1], [itrg-contact@list.nist.gov])
 AM_INIT_AUTOMAKE([-Wall -Werror -Wno-portability subdir-objects])
 
 # AC_CONFIG_SRCDIR specifies a file that the configuration checks for existence.
@@ -114,7 +114,10 @@ else
   AC_SUBST(PRINT_CRYPTO)
 fi
 
+#
 # Checks for libraries.
+#
+AS_BOX([Process libraries])
 
 ##
 ## CHECK FOR pthread library
@@ -137,19 +140,24 @@ else
 fi
 
 ##
-## Library: readline for rpkirtr_svr
+## Library: readline for brio_tc
 ##
 AC_SEARCH_LIBS([write_history], [readline], [], 
   [AC_MSG_ERROR([
 	--------------------------------------------------
 	The library 'libreadline' is required to build 
-	srx_server client and rpkirtr_svr tool.
+	brio_tc tool.
 	--------------------------------------------------])])
 
-#
-# Checks for libraries.
-#
-AS_BOX([Process libraries])
+##
+## Library: math (-lm) 
+##
+AC_SEARCH_LIBS([log10], [m], [], 
+  [AC_MSG_ERROR([
+	--------------------------------------------------
+	The library 'math' (-lm) is required to build 
+	brio_tc tool.
+	--------------------------------------------------])])
 
 have_libraries="no"
 AC_SEARCH_LIBS([clock_gettime], [rt], [have_libraries="yes"])

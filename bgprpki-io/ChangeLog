@@ -1,9 +1,20 @@
+Version b0.7.0.1
+  * Synchronized versioning accross all code.
+  * Added --show-settings to print out configured settings.
+  * Added --disable_bgpsec parameter and disable_bgpsec configuration to allow 
+    operation as BGP feeder only.
+  * Changed default mode from BGP_C to BGP.
+  * Removed un-used structs.
+Version 0.3.0.1
+  * Removed one include if compiled for UBUNTU OS
+  * Fixed Makefile.am to deal accept README.md in lieu of README
 Version 0.3.0.0
   * Added library check for libreadline.
   * Added RPKI cache from srx-server to this code base using the name brio_cache
   * Changed from bgpsecio (BIO) into brio (BGP-RPKI-IO).
   * Renamed bio-traffic.sh to brio-traffic.sh and mrt-to-bio.sh to mrt-to-brio.sh
   * Removed deprecation tag in BGPHeader.[c|h]
+  * Removed one include if compiled for ROCKY OS 
   * Fixed compiler warnings.
 Version 0.2.2.1
   * Fixed speller in message when using parameter -C

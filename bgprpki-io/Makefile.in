@@ -91,7 +91,7 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-brio_PROGRAMS = brio$(EXEEXT) brio_cache$(EXEEXT)
+brio_PROGRAMS = brio_tg$(EXEEXT) brio_rc$(EXEEXT)
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/libtool.m4 \
@@ -159,23 +159,24 @@ libsrx_common_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
 	$(libsrx_common_la_CFLAGS) $(CFLAGS) \
 	$(libsrx_common_la_LDFLAGS) $(LDFLAGS) -o $@
-am_brio_OBJECTS = brio-ASList.$(OBJEXT) brio-ASNTokenizer.$(OBJEXT) \
-	brio-updateStackUtil.$(OBJEXT) \
-	cfg/brio-configuration.$(OBJEXT) cfg/brio-cfgFile.$(OBJEXT) \
-	player/brio-player.$(OBJEXT) brio-bgpsecio.$(OBJEXT)
-brio_OBJECTS = $(am_brio_OBJECTS)
-brio_DEPENDENCIES = libantd_util.la libbrio_bgp.la
-brio_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
-	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(brio_CFLAGS) $(CFLAGS) \
-	$(brio_LDFLAGS) $(LDFLAGS) -o $@
-am_brio_cache_OBJECTS = srx-common/brio_cache-server_socket.$(OBJEXT) \
-	rpki-rtr-protocol/brio_cache-rpkirtr_svr.$(OBJEXT)
-brio_cache_OBJECTS = $(am_brio_cache_OBJECTS)
-brio_cache_DEPENDENCIES = libantd_util.la libbrio_bgp.la \
-	libsrx_common.la
-brio_cache_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
-	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(brio_cache_CFLAGS) \
-	$(CFLAGS) $(brio_cache_LDFLAGS) $(LDFLAGS) -o $@
+am_brio_rc_OBJECTS = srx-common/brio_rc-server_socket.$(OBJEXT) \
+	rpki-rtr-protocol/brio_rc-rpkirtr_svr.$(OBJEXT)
+brio_rc_OBJECTS = $(am_brio_rc_OBJECTS)
+brio_rc_DEPENDENCIES = libantd_util.la libbrio_bgp.la libsrx_common.la
+brio_rc_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(brio_rc_CFLAGS) \
+	$(CFLAGS) $(brio_rc_LDFLAGS) $(LDFLAGS) -o $@
+am_brio_tg_OBJECTS = brio_tg-ASList.$(OBJEXT) \
+	brio_tg-ASNTokenizer.$(OBJEXT) \
+	brio_tg-updateStackUtil.$(OBJEXT) \
+	cfg/brio_tg-configuration.$(OBJEXT) \
+	cfg/brio_tg-cfgFile.$(OBJEXT) player/brio_tg-player.$(OBJEXT) \
+	brio_tg-bgpsecio.$(OBJEXT)
+brio_tg_OBJECTS = $(am_brio_tg_OBJECTS)
+brio_tg_DEPENDENCIES = libantd_util.la libbrio_bgp.la
+brio_tg_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(brio_tg_CFLAGS) \
+	$(CFLAGS) $(brio_tg_LDFLAGS) $(LDFLAGS) -o $@
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
 am__vpath_adj = case $$p in \
     $(srcdir)/*) f=`echo "$$p" | sed "s|^$$srcdirstrip/||"`;; \
@@ -219,9 +220,10 @@ am__v_at_1 =
 DEFAULT_INCLUDES = -I.@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__maybe_remake_depfiles = depfiles
-am__depfiles_remade = ./$(DEPDIR)/brio-ASList.Po \
-	./$(DEPDIR)/brio-ASNTokenizer.Po ./$(DEPDIR)/brio-bgpsecio.Po \
-	./$(DEPDIR)/brio-updateStackUtil.Po \
+am__depfiles_remade = ./$(DEPDIR)/brio_tg-ASList.Po \
+	./$(DEPDIR)/brio_tg-ASNTokenizer.Po \
+	./$(DEPDIR)/brio_tg-bgpsecio.Po \
+	./$(DEPDIR)/brio_tg-updateStackUtil.Po \
 	antd-util/$(DEPDIR)/linked_list.Plo \
 	antd-util/$(DEPDIR)/log.Plo antd-util/$(DEPDIR)/prefix.Plo \
 	antd-util/$(DEPDIR)/printer.Plo antd-util/$(DEPDIR)/stack.Plo \
@@ -235,11 +237,11 @@ am__depfiles_remade = ./$(DEPDIR)/brio-ASList.Po \
 	bgp/printer/$(DEPDIR)/libbrio_bgp_la-BGPUpdatePrinter.Plo \
 	bgpsec/$(DEPDIR)/libbrio_bgp_la-BGPSecPathBin.Plo \
 	bgpsec/$(DEPDIR)/libbrio_bgp_la-Crypto.Plo \
-	cfg/$(DEPDIR)/brio-cfgFile.Po \
-	cfg/$(DEPDIR)/brio-configuration.Po \
-	player/$(DEPDIR)/brio-player.Po \
-	rpki-rtr-protocol/$(DEPDIR)/brio_cache-rpkirtr_svr.Po \
-	srx-common/$(DEPDIR)/brio_cache-server_socket.Po \
+	cfg/$(DEPDIR)/brio_tg-cfgFile.Po \
+	cfg/$(DEPDIR)/brio_tg-configuration.Po \
+	player/$(DEPDIR)/brio_tg-player.Po \
+	rpki-rtr-protocol/$(DEPDIR)/brio_rc-rpkirtr_svr.Po \
+	srx-common/$(DEPDIR)/brio_rc-server_socket.Po \
 	srx-common/$(DEPDIR)/libsrx_common_la-debug.Plo \
 	srx-common/$(DEPDIR)/libsrx_common_la-mutex.Plo \
 	srx-common/$(DEPDIR)/libsrx_common_la-rwlock.Plo \
@@ -267,11 +269,11 @@ am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
 SOURCES = $(libantd_util_la_SOURCES) $(libbrio_bgp_la_SOURCES) \
-	$(libsrx_common_la_SOURCES) $(brio_SOURCES) \
-	$(brio_cache_SOURCES)
+	$(libsrx_common_la_SOURCES) $(brio_rc_SOURCES) \
+	$(brio_tg_SOURCES)
 DIST_SOURCES = $(libantd_util_la_SOURCES) $(libbrio_bgp_la_SOURCES) \
-	$(libsrx_common_la_SOURCES) $(brio_SOURCES) \
-	$(brio_cache_SOURCES)
+	$(libsrx_common_la_SOURCES) $(brio_rc_SOURCES) \
+	$(brio_tg_SOURCES)
 RECURSIVE_TARGETS = all-recursive check-recursive cscopelist-recursive \
 	ctags-recursive dvi-recursive html-recursive info-recursive \
 	install-data-recursive install-dvi-recursive \
@@ -318,8 +320,8 @@ CSCOPE = cscope
 DIST_SUBDIRS = $(SUBDIRS)
 am__DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/brio.spec.in \
 	$(srcdir)/config.h.in AUTHORS COPYING ChangeLog INSTALL NEWS \
-	compile config.guess config.sub depcomp install-sh ltmain.sh \
-	missing
+	README compile config.guess config.sub depcomp install-sh \
+	ltmain.sh missing
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 distdir = $(PACKAGE)-$(VERSION)
 top_distdir = $(distdir)
@@ -503,7 +505,6 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 ACLOCAL_AMFLAGS = -I m4
-AUTOMAKE_OPTIONS = foreign
 SUBDIRS = $(CUNIT_TESTS)
 CLEAN_SUBDIRS = .libs .deps
 EXTRA_DIST = $(PACKAGE_TARNAME).spec.in
@@ -552,24 +553,23 @@ libbrio_bgp_la_LDFLAGS = $(LDFLAGS) $(SCA_LDFLAGS) $(OPENSSL_LDFLAGS)
 ################################################################################
 briodir = $(bindir)
 AM_FLAGS = -DPRG_VERSION=@MAJOR_VER@.@MINOR_VER@
-brio_cache_SOURCES = \
+brio_rc_SOURCES = \
           srx-common/server_socket.c      \
           rpki-rtr-protocol/rpkirtr_svr.c
 
-brio_cache_LDADD = \
+brio_rc_LDADD = \
           libantd_util.la \
           libbrio_bgp.la  \
           libsrx_common.la
 
-brio_cache_CFLAGS = $(SCA_CFLAGS) $(OS_CFLAGS) -DBRIO
-brio_cache_LDFLAGS = $(LDFLAGS) \
+brio_rc_CFLAGS = $(SCA_CFLAGS) $(OS_CFLAGS) -DBRIO
+brio_rc_LDFLAGS = $(LDFLAGS) \
           -ldl           \
-          -lm            \
           -lrt           \
           -lconfig       \
           $(LIBS)
 
-brio_SOURCES = \
+brio_tg_SOURCES = \
           ASList.c            \
           ASNTokenizer.c      \
           updateStackUtil.c   \
@@ -578,11 +578,10 @@ brio_SOURCES = \
           player/player.c     \
           bgpsecio.c
 
-brio_LDADD = libantd_util.la libbrio_bgp.la
-brio_CFLAGS = $(SCA_CFLAGS) $(OPENSSL_CFLAGS) $(OS_CFLAGS)  -DBRIO
-brio_LDFLAGS = $(LDFLAGS) $(SCA_LDFLAGS) $(OPENSSL_LDFLAGS) \
+brio_tg_LDADD = libantd_util.la libbrio_bgp.la
+brio_tg_CFLAGS = $(SCA_CFLAGS) $(OPENSSL_CFLAGS) $(OS_CFLAGS)  -DBRIO
+brio_tg_LDFLAGS = $(LDFLAGS) $(SCA_LDFLAGS) $(OPENSSL_LDFLAGS) \
           -ldl           \
-          -lm            \
           -lrt           \
           -lconfig       \
           @OPENSSL_LIBS@ \
@@ -651,15 +650,15 @@ $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
 	    *$$dep*) \
-	      echo ' cd $(srcdir) && $(AUTOMAKE) --foreign'; \
-	      $(am__cd) $(srcdir) && $(AUTOMAKE) --foreign \
+	      echo ' cd $(srcdir) && $(AUTOMAKE) --gnu'; \
+	      $(am__cd) $(srcdir) && $(AUTOMAKE) --gnu \
 		&& exit 0; \
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu Makefile'; \
 	$(am__cd) $(top_srcdir) && \
-	  $(AUTOMAKE) --foreign Makefile
+	  $(AUTOMAKE) --gnu Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \
 	  *config.status*) \
@@ -841,29 +840,7 @@ srx-common/libsrx_common_la-timer.lo: srx-common/$(am__dirstamp) \
 
 libsrx_common.la: $(libsrx_common_la_OBJECTS) $(libsrx_common_la_DEPENDENCIES) $(EXTRA_libsrx_common_la_DEPENDENCIES) 
 	$(AM_V_CCLD)$(libsrx_common_la_LINK)  $(libsrx_common_la_OBJECTS) $(libsrx_common_la_LIBADD) $(LIBS)
-cfg/$(am__dirstamp):
-	@$(MKDIR_P) cfg
-	@: > cfg/$(am__dirstamp)
-cfg/$(DEPDIR)/$(am__dirstamp):
-	@$(MKDIR_P) cfg/$(DEPDIR)
-	@: > cfg/$(DEPDIR)/$(am__dirstamp)
-cfg/brio-configuration.$(OBJEXT): cfg/$(am__dirstamp) \
-	cfg/$(DEPDIR)/$(am__dirstamp)
-cfg/brio-cfgFile.$(OBJEXT): cfg/$(am__dirstamp) \
-	cfg/$(DEPDIR)/$(am__dirstamp)
-player/$(am__dirstamp):
-	@$(MKDIR_P) player
-	@: > player/$(am__dirstamp)
-player/$(DEPDIR)/$(am__dirstamp):
-	@$(MKDIR_P) player/$(DEPDIR)
-	@: > player/$(DEPDIR)/$(am__dirstamp)
-player/brio-player.$(OBJEXT): player/$(am__dirstamp) \
-	player/$(DEPDIR)/$(am__dirstamp)
-
-brio$(EXEEXT): $(brio_OBJECTS) $(brio_DEPENDENCIES) $(EXTRA_brio_DEPENDENCIES) 
-	@rm -f brio$(EXEEXT)
-	$(AM_V_CCLD)$(brio_LINK) $(brio_OBJECTS) $(brio_LDADD) $(LIBS)
-srx-common/brio_cache-server_socket.$(OBJEXT):  \
+srx-common/brio_rc-server_socket.$(OBJEXT):  \
 	srx-common/$(am__dirstamp) \
 	srx-common/$(DEPDIR)/$(am__dirstamp)
 rpki-rtr-protocol/$(am__dirstamp):
@@ -872,13 +849,35 @@ rpki-rtr-protocol/$(am__dirstamp):
 rpki-rtr-protocol/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) rpki-rtr-protocol/$(DEPDIR)
 	@: > rpki-rtr-protocol/$(DEPDIR)/$(am__dirstamp)
-rpki-rtr-protocol/brio_cache-rpkirtr_svr.$(OBJEXT):  \
+rpki-rtr-protocol/brio_rc-rpkirtr_svr.$(OBJEXT):  \
 	rpki-rtr-protocol/$(am__dirstamp) \
 	rpki-rtr-protocol/$(DEPDIR)/$(am__dirstamp)
 
-brio_cache$(EXEEXT): $(brio_cache_OBJECTS) $(brio_cache_DEPENDENCIES) $(EXTRA_brio_cache_DEPENDENCIES) 
-	@rm -f brio_cache$(EXEEXT)
-	$(AM_V_CCLD)$(brio_cache_LINK) $(brio_cache_OBJECTS) $(brio_cache_LDADD) $(LIBS)
+brio_rc$(EXEEXT): $(brio_rc_OBJECTS) $(brio_rc_DEPENDENCIES) $(EXTRA_brio_rc_DEPENDENCIES) 
+	@rm -f brio_rc$(EXEEXT)
+	$(AM_V_CCLD)$(brio_rc_LINK) $(brio_rc_OBJECTS) $(brio_rc_LDADD) $(LIBS)
+cfg/$(am__dirstamp):
+	@$(MKDIR_P) cfg
+	@: > cfg/$(am__dirstamp)
+cfg/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) cfg/$(DEPDIR)
+	@: > cfg/$(DEPDIR)/$(am__dirstamp)
+cfg/brio_tg-configuration.$(OBJEXT): cfg/$(am__dirstamp) \
+	cfg/$(DEPDIR)/$(am__dirstamp)
+cfg/brio_tg-cfgFile.$(OBJEXT): cfg/$(am__dirstamp) \
+	cfg/$(DEPDIR)/$(am__dirstamp)
+player/$(am__dirstamp):
+	@$(MKDIR_P) player
+	@: > player/$(am__dirstamp)
+player/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) player/$(DEPDIR)
+	@: > player/$(DEPDIR)/$(am__dirstamp)
+player/brio_tg-player.$(OBJEXT): player/$(am__dirstamp) \
+	player/$(DEPDIR)/$(am__dirstamp)
+
+brio_tg$(EXEEXT): $(brio_tg_OBJECTS) $(brio_tg_DEPENDENCIES) $(EXTRA_brio_tg_DEPENDENCIES) 
+	@rm -f brio_tg$(EXEEXT)
+	$(AM_V_CCLD)$(brio_tg_LINK) $(brio_tg_OBJECTS) $(brio_tg_LDADD) $(LIBS)
 install-dist_binSCRIPTS: $(dist_bin_SCRIPTS)
 	@$(NORMAL_INSTALL)
 	@list='$(dist_bin_SCRIPTS)'; test -n "$(bindir)" || list=; \
@@ -934,10 +933,10 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/brio-ASList.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/brio-ASNTokenizer.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/brio-bgpsecio.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/brio-updateStackUtil.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/brio_tg-ASList.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/brio_tg-ASNTokenizer.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/brio_tg-bgpsecio.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/brio_tg-updateStackUtil.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@antd-util/$(DEPDIR)/linked_list.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@antd-util/$(DEPDIR)/log.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@antd-util/$(DEPDIR)/prefix.Plo@am__quote@ # am--include-marker
@@ -953,11 +952,11 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@bgp/printer/$(DEPDIR)/libbrio_bgp_la-BGPUpdatePrinter.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@bgpsec/$(DEPDIR)/libbrio_bgp_la-BGPSecPathBin.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@bgpsec/$(DEPDIR)/libbrio_bgp_la-Crypto.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@cfg/$(DEPDIR)/brio-cfgFile.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@cfg/$(DEPDIR)/brio-configuration.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@player/$(DEPDIR)/brio-player.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@rpki-rtr-protocol/$(DEPDIR)/brio_cache-rpkirtr_svr.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@srx-common/$(DEPDIR)/brio_cache-server_socket.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@cfg/$(DEPDIR)/brio_tg-cfgFile.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@cfg/$(DEPDIR)/brio_tg-configuration.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@player/$(DEPDIR)/brio_tg-player.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@rpki-rtr-protocol/$(DEPDIR)/brio_rc-rpkirtr_svr.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@srx-common/$(DEPDIR)/brio_rc-server_socket.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@srx-common/$(DEPDIR)/libsrx_common_la-debug.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@srx-common/$(DEPDIR)/libsrx_common_la-mutex.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@srx-common/$(DEPDIR)/libsrx_common_la-rwlock.Plo@am__quote@ # am--include-marker
@@ -1115,131 +1114,131 @@ srx-common/libsrx_common_la-timer.lo: srx-common/timer.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libsrx_common_la_CFLAGS) $(CFLAGS) -c -o srx-common/libsrx_common_la-timer.lo `test -f 'srx-common/timer.c' || echo '$(srcdir)/'`srx-common/timer.c
 
-brio-ASList.o: ASList.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(brio_CFLAGS) $(CFLAGS) -MT brio-ASList.o -MD -MP -MF $(DEPDIR)/brio-ASList.Tpo -c -o brio-ASList.o `test -f 'ASList.c' || echo '$(srcdir)/'`ASList.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/brio-ASList.Tpo $(DEPDIR)/brio-ASList.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='ASList.c' object='brio-ASList.o' libtool=no @AMDEPBACKSLASH@
+srx-common/brio_rc-server_socket.o: srx-common/server_socket.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(brio_rc_CFLAGS) $(CFLAGS) -MT srx-common/brio_rc-server_socket.o -MD -MP -MF srx-common/$(DEPDIR)/brio_rc-server_socket.Tpo -c -o srx-common/brio_rc-server_socket.o `test -f 'srx-common/server_socket.c' || echo '$(srcdir)/'`srx-common/server_socket.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) srx-common/$(DEPDIR)/brio_rc-server_socket.Tpo srx-common/$(DEPDIR)/brio_rc-server_socket.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='srx-common/server_socket.c' object='srx-common/brio_rc-server_socket.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(brio_CFLAGS) $(CFLAGS) -c -o brio-ASList.o `test -f 'ASList.c' || echo '$(srcdir)/'`ASList.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(brio_rc_CFLAGS) $(CFLAGS) -c -o srx-common/brio_rc-server_socket.o `test -f 'srx-common/server_socket.c' || echo '$(srcdir)/'`srx-common/server_socket.c
 
-brio-ASList.obj: ASList.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(brio_CFLAGS) $(CFLAGS) -MT brio-ASList.obj -MD -MP -MF $(DEPDIR)/brio-ASList.Tpo -c -o brio-ASList.obj `if test -f 'ASList.c'; then $(CYGPATH_W) 'ASList.c'; else $(CYGPATH_W) '$(srcdir)/ASList.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/brio-ASList.Tpo $(DEPDIR)/brio-ASList.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='ASList.c' object='brio-ASList.obj' libtool=no @AMDEPBACKSLASH@
+srx-common/brio_rc-server_socket.obj: srx-common/server_socket.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(brio_rc_CFLAGS) $(CFLAGS) -MT srx-common/brio_rc-server_socket.obj -MD -MP -MF srx-common/$(DEPDIR)/brio_rc-server_socket.Tpo -c -o srx-common/brio_rc-server_socket.obj `if test -f 'srx-common/server_socket.c'; then $(CYGPATH_W) 'srx-common/server_socket.c'; else $(CYGPATH_W) '$(srcdir)/srx-common/server_socket.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) srx-common/$(DEPDIR)/brio_rc-server_socket.Tpo srx-common/$(DEPDIR)/brio_rc-server_socket.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='srx-common/server_socket.c' object='srx-common/brio_rc-server_socket.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(brio_CFLAGS) $(CFLAGS) -c -o brio-ASList.obj `if test -f 'ASList.c'; then $(CYGPATH_W) 'ASList.c'; else $(CYGPATH_W) '$(srcdir)/ASList.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(brio_rc_CFLAGS) $(CFLAGS) -c -o srx-common/brio_rc-server_socket.obj `if test -f 'srx-common/server_socket.c'; then $(CYGPATH_W) 'srx-common/server_socket.c'; else $(CYGPATH_W) '$(srcdir)/srx-common/server_socket.c'; fi`
 
-brio-ASNTokenizer.o: ASNTokenizer.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(brio_CFLAGS) $(CFLAGS) -MT brio-ASNTokenizer.o -MD -MP -MF $(DEPDIR)/brio-ASNTokenizer.Tpo -c -o brio-ASNTokenizer.o `test -f 'ASNTokenizer.c' || echo '$(srcdir)/'`ASNTokenizer.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/brio-ASNTokenizer.Tpo $(DEPDIR)/brio-ASNTokenizer.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='ASNTokenizer.c' object='brio-ASNTokenizer.o' libtool=no @AMDEPBACKSLASH@
+rpki-rtr-protocol/brio_rc-rpkirtr_svr.o: rpki-rtr-protocol/rpkirtr_svr.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(brio_rc_CFLAGS) $(CFLAGS) -MT rpki-rtr-protocol/brio_rc-rpkirtr_svr.o -MD -MP -MF rpki-rtr-protocol/$(DEPDIR)/brio_rc-rpkirtr_svr.Tpo -c -o rpki-rtr-protocol/brio_rc-rpkirtr_svr.o `test -f 'rpki-rtr-protocol/rpkirtr_svr.c' || echo '$(srcdir)/'`rpki-rtr-protocol/rpkirtr_svr.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) rpki-rtr-protocol/$(DEPDIR)/brio_rc-rpkirtr_svr.Tpo rpki-rtr-protocol/$(DEPDIR)/brio_rc-rpkirtr_svr.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='rpki-rtr-protocol/rpkirtr_svr.c' object='rpki-rtr-protocol/brio_rc-rpkirtr_svr.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(brio_CFLAGS) $(CFLAGS) -c -o brio-ASNTokenizer.o `test -f 'ASNTokenizer.c' || echo '$(srcdir)/'`ASNTokenizer.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(brio_rc_CFLAGS) $(CFLAGS) -c -o rpki-rtr-protocol/brio_rc-rpkirtr_svr.o `test -f 'rpki-rtr-protocol/rpkirtr_svr.c' || echo '$(srcdir)/'`rpki-rtr-protocol/rpkirtr_svr.c
 
-brio-ASNTokenizer.obj: ASNTokenizer.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(brio_CFLAGS) $(CFLAGS) -MT brio-ASNTokenizer.obj -MD -MP -MF $(DEPDIR)/brio-ASNTokenizer.Tpo -c -o brio-ASNTokenizer.obj `if test -f 'ASNTokenizer.c'; then $(CYGPATH_W) 'ASNTokenizer.c'; else $(CYGPATH_W) '$(srcdir)/ASNTokenizer.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/brio-ASNTokenizer.Tpo $(DEPDIR)/brio-ASNTokenizer.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='ASNTokenizer.c' object='brio-ASNTokenizer.obj' libtool=no @AMDEPBACKSLASH@
+rpki-rtr-protocol/brio_rc-rpkirtr_svr.obj: rpki-rtr-protocol/rpkirtr_svr.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(brio_rc_CFLAGS) $(CFLAGS) -MT rpki-rtr-protocol/brio_rc-rpkirtr_svr.obj -MD -MP -MF rpki-rtr-protocol/$(DEPDIR)/brio_rc-rpkirtr_svr.Tpo -c -o rpki-rtr-protocol/brio_rc-rpkirtr_svr.obj `if test -f 'rpki-rtr-protocol/rpkirtr_svr.c'; then $(CYGPATH_W) 'rpki-rtr-protocol/rpkirtr_svr.c'; else $(CYGPATH_W) '$(srcdir)/rpki-rtr-protocol/rpkirtr_svr.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) rpki-rtr-protocol/$(DEPDIR)/brio_rc-rpkirtr_svr.Tpo rpki-rtr-protocol/$(DEPDIR)/brio_rc-rpkirtr_svr.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='rpki-rtr-protocol/rpkirtr_svr.c' object='rpki-rtr-protocol/brio_rc-rpkirtr_svr.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(brio_CFLAGS) $(CFLAGS) -c -o brio-ASNTokenizer.obj `if test -f 'ASNTokenizer.c'; then $(CYGPATH_W) 'ASNTokenizer.c'; else $(CYGPATH_W) '$(srcdir)/ASNTokenizer.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(brio_rc_CFLAGS) $(CFLAGS) -c -o rpki-rtr-protocol/brio_rc-rpkirtr_svr.obj `if test -f 'rpki-rtr-protocol/rpkirtr_svr.c'; then $(CYGPATH_W) 'rpki-rtr-protocol/rpkirtr_svr.c'; else $(CYGPATH_W) '$(srcdir)/rpki-rtr-protocol/rpkirtr_svr.c'; fi`
 
-brio-updateStackUtil.o: updateStackUtil.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(brio_CFLAGS) $(CFLAGS) -MT brio-updateStackUtil.o -MD -MP -MF $(DEPDIR)/brio-updateStackUtil.Tpo -c -o brio-updateStackUtil.o `test -f 'updateStackUtil.c' || echo '$(srcdir)/'`updateStackUtil.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/brio-updateStackUtil.Tpo $(DEPDIR)/brio-updateStackUtil.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='updateStackUtil.c' object='brio-updateStackUtil.o' libtool=no @AMDEPBACKSLASH@
+brio_tg-ASList.o: ASList.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(brio_tg_CFLAGS) $(CFLAGS) -MT brio_tg-ASList.o -MD -MP -MF $(DEPDIR)/brio_tg-ASList.Tpo -c -o brio_tg-ASList.o `test -f 'ASList.c' || echo '$(srcdir)/'`ASList.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/brio_tg-ASList.Tpo $(DEPDIR)/brio_tg-ASList.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='ASList.c' object='brio_tg-ASList.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(brio_CFLAGS) $(CFLAGS) -c -o brio-updateStackUtil.o `test -f 'updateStackUtil.c' || echo '$(srcdir)/'`updateStackUtil.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(brio_tg_CFLAGS) $(CFLAGS) -c -o brio_tg-ASList.o `test -f 'ASList.c' || echo '$(srcdir)/'`ASList.c
 
-brio-updateStackUtil.obj: updateStackUtil.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(brio_CFLAGS) $(CFLAGS) -MT brio-updateStackUtil.obj -MD -MP -MF $(DEPDIR)/brio-updateStackUtil.Tpo -c -o brio-updateStackUtil.obj `if test -f 'updateStackUtil.c'; then $(CYGPATH_W) 'updateStackUtil.c'; else $(CYGPATH_W) '$(srcdir)/updateStackUtil.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/brio-updateStackUtil.Tpo $(DEPDIR)/brio-updateStackUtil.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='updateStackUtil.c' object='brio-updateStackUtil.obj' libtool=no @AMDEPBACKSLASH@
+brio_tg-ASList.obj: ASList.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(brio_tg_CFLAGS) $(CFLAGS) -MT brio_tg-ASList.obj -MD -MP -MF $(DEPDIR)/brio_tg-ASList.Tpo -c -o brio_tg-ASList.obj `if test -f 'ASList.c'; then $(CYGPATH_W) 'ASList.c'; else $(CYGPATH_W) '$(srcdir)/ASList.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/brio_tg-ASList.Tpo $(DEPDIR)/brio_tg-ASList.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='ASList.c' object='brio_tg-ASList.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(brio_CFLAGS) $(CFLAGS) -c -o brio-updateStackUtil.obj `if test -f 'updateStackUtil.c'; then $(CYGPATH_W) 'updateStackUtil.c'; else $(CYGPATH_W) '$(srcdir)/updateStackUtil.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(brio_tg_CFLAGS) $(CFLAGS) -c -o brio_tg-ASList.obj `if test -f 'ASList.c'; then $(CYGPATH_W) 'ASList.c'; else $(CYGPATH_W) '$(srcdir)/ASList.c'; fi`
 
-cfg/brio-configuration.o: cfg/configuration.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(brio_CFLAGS) $(CFLAGS) -MT cfg/brio-configuration.o -MD -MP -MF cfg/$(DEPDIR)/brio-configuration.Tpo -c -o cfg/brio-configuration.o `test -f 'cfg/configuration.c' || echo '$(srcdir)/'`cfg/configuration.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) cfg/$(DEPDIR)/brio-configuration.Tpo cfg/$(DEPDIR)/brio-configuration.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='cfg/configuration.c' object='cfg/brio-configuration.o' libtool=no @AMDEPBACKSLASH@
+brio_tg-ASNTokenizer.o: ASNTokenizer.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(brio_tg_CFLAGS) $(CFLAGS) -MT brio_tg-ASNTokenizer.o -MD -MP -MF $(DEPDIR)/brio_tg-ASNTokenizer.Tpo -c -o brio_tg-ASNTokenizer.o `test -f 'ASNTokenizer.c' || echo '$(srcdir)/'`ASNTokenizer.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/brio_tg-ASNTokenizer.Tpo $(DEPDIR)/brio_tg-ASNTokenizer.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='ASNTokenizer.c' object='brio_tg-ASNTokenizer.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(brio_CFLAGS) $(CFLAGS) -c -o cfg/brio-configuration.o `test -f 'cfg/configuration.c' || echo '$(srcdir)/'`cfg/configuration.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(brio_tg_CFLAGS) $(CFLAGS) -c -o brio_tg-ASNTokenizer.o `test -f 'ASNTokenizer.c' || echo '$(srcdir)/'`ASNTokenizer.c
 
-cfg/brio-configuration.obj: cfg/configuration.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(brio_CFLAGS) $(CFLAGS) -MT cfg/brio-configuration.obj -MD -MP -MF cfg/$(DEPDIR)/brio-configuration.Tpo -c -o cfg/brio-configuration.obj `if test -f 'cfg/configuration.c'; then $(CYGPATH_W) 'cfg/configuration.c'; else $(CYGPATH_W) '$(srcdir)/cfg/configuration.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) cfg/$(DEPDIR)/brio-configuration.Tpo cfg/$(DEPDIR)/brio-configuration.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='cfg/configuration.c' object='cfg/brio-configuration.obj' libtool=no @AMDEPBACKSLASH@
+brio_tg-ASNTokenizer.obj: ASNTokenizer.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(brio_tg_CFLAGS) $(CFLAGS) -MT brio_tg-ASNTokenizer.obj -MD -MP -MF $(DEPDIR)/brio_tg-ASNTokenizer.Tpo -c -o brio_tg-ASNTokenizer.obj `if test -f 'ASNTokenizer.c'; then $(CYGPATH_W) 'ASNTokenizer.c'; else $(CYGPATH_W) '$(srcdir)/ASNTokenizer.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/brio_tg-ASNTokenizer.Tpo $(DEPDIR)/brio_tg-ASNTokenizer.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='ASNTokenizer.c' object='brio_tg-ASNTokenizer.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(brio_CFLAGS) $(CFLAGS) -c -o cfg/brio-configuration.obj `if test -f 'cfg/configuration.c'; then $(CYGPATH_W) 'cfg/configuration.c'; else $(CYGPATH_W) '$(srcdir)/cfg/configuration.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(brio_tg_CFLAGS) $(CFLAGS) -c -o brio_tg-ASNTokenizer.obj `if test -f 'ASNTokenizer.c'; then $(CYGPATH_W) 'ASNTokenizer.c'; else $(CYGPATH_W) '$(srcdir)/ASNTokenizer.c'; fi`
 
-cfg/brio-cfgFile.o: cfg/cfgFile.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(brio_CFLAGS) $(CFLAGS) -MT cfg/brio-cfgFile.o -MD -MP -MF cfg/$(DEPDIR)/brio-cfgFile.Tpo -c -o cfg/brio-cfgFile.o `test -f 'cfg/cfgFile.c' || echo '$(srcdir)/'`cfg/cfgFile.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) cfg/$(DEPDIR)/brio-cfgFile.Tpo cfg/$(DEPDIR)/brio-cfgFile.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='cfg/cfgFile.c' object='cfg/brio-cfgFile.o' libtool=no @AMDEPBACKSLASH@
+brio_tg-updateStackUtil.o: updateStackUtil.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(brio_tg_CFLAGS) $(CFLAGS) -MT brio_tg-updateStackUtil.o -MD -MP -MF $(DEPDIR)/brio_tg-updateStackUtil.Tpo -c -o brio_tg-updateStackUtil.o `test -f 'updateStackUtil.c' || echo '$(srcdir)/'`updateStackUtil.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/brio_tg-updateStackUtil.Tpo $(DEPDIR)/brio_tg-updateStackUtil.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='updateStackUtil.c' object='brio_tg-updateStackUtil.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(brio_CFLAGS) $(CFLAGS) -c -o cfg/brio-cfgFile.o `test -f 'cfg/cfgFile.c' || echo '$(srcdir)/'`cfg/cfgFile.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(brio_tg_CFLAGS) $(CFLAGS) -c -o brio_tg-updateStackUtil.o `test -f 'updateStackUtil.c' || echo '$(srcdir)/'`updateStackUtil.c
 
-cfg/brio-cfgFile.obj: cfg/cfgFile.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(brio_CFLAGS) $(CFLAGS) -MT cfg/brio-cfgFile.obj -MD -MP -MF cfg/$(DEPDIR)/brio-cfgFile.Tpo -c -o cfg/brio-cfgFile.obj `if test -f 'cfg/cfgFile.c'; then $(CYGPATH_W) 'cfg/cfgFile.c'; else $(CYGPATH_W) '$(srcdir)/cfg/cfgFile.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) cfg/$(DEPDIR)/brio-cfgFile.Tpo cfg/$(DEPDIR)/brio-cfgFile.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='cfg/cfgFile.c' object='cfg/brio-cfgFile.obj' libtool=no @AMDEPBACKSLASH@
+brio_tg-updateStackUtil.obj: updateStackUtil.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(brio_tg_CFLAGS) $(CFLAGS) -MT brio_tg-updateStackUtil.obj -MD -MP -MF $(DEPDIR)/brio_tg-updateStackUtil.Tpo -c -o brio_tg-updateStackUtil.obj `if test -f 'updateStackUtil.c'; then $(CYGPATH_W) 'updateStackUtil.c'; else $(CYGPATH_W) '$(srcdir)/updateStackUtil.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/brio_tg-updateStackUtil.Tpo $(DEPDIR)/brio_tg-updateStackUtil.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='updateStackUtil.c' object='brio_tg-updateStackUtil.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(brio_CFLAGS) $(CFLAGS) -c -o cfg/brio-cfgFile.obj `if test -f 'cfg/cfgFile.c'; then $(CYGPATH_W) 'cfg/cfgFile.c'; else $(CYGPATH_W) '$(srcdir)/cfg/cfgFile.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(brio_tg_CFLAGS) $(CFLAGS) -c -o brio_tg-updateStackUtil.obj `if test -f 'updateStackUtil.c'; then $(CYGPATH_W) 'updateStackUtil.c'; else $(CYGPATH_W) '$(srcdir)/updateStackUtil.c'; fi`
 
-player/brio-player.o: player/player.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(brio_CFLAGS) $(CFLAGS) -MT player/brio-player.o -MD -MP -MF player/$(DEPDIR)/brio-player.Tpo -c -o player/brio-player.o `test -f 'player/player.c' || echo '$(srcdir)/'`player/player.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) player/$(DEPDIR)/brio-player.Tpo player/$(DEPDIR)/brio-player.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='player/player.c' object='player/brio-player.o' libtool=no @AMDEPBACKSLASH@
+cfg/brio_tg-configuration.o: cfg/configuration.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(brio_tg_CFLAGS) $(CFLAGS) -MT cfg/brio_tg-configuration.o -MD -MP -MF cfg/$(DEPDIR)/brio_tg-configuration.Tpo -c -o cfg/brio_tg-configuration.o `test -f 'cfg/configuration.c' || echo '$(srcdir)/'`cfg/configuration.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) cfg/$(DEPDIR)/brio_tg-configuration.Tpo cfg/$(DEPDIR)/brio_tg-configuration.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='cfg/configuration.c' object='cfg/brio_tg-configuration.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(brio_CFLAGS) $(CFLAGS) -c -o player/brio-player.o `test -f 'player/player.c' || echo '$(srcdir)/'`player/player.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(brio_tg_CFLAGS) $(CFLAGS) -c -o cfg/brio_tg-configuration.o `test -f 'cfg/configuration.c' || echo '$(srcdir)/'`cfg/configuration.c
 
-player/brio-player.obj: player/player.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(brio_CFLAGS) $(CFLAGS) -MT player/brio-player.obj -MD -MP -MF player/$(DEPDIR)/brio-player.Tpo -c -o player/brio-player.obj `if test -f 'player/player.c'; then $(CYGPATH_W) 'player/player.c'; else $(CYGPATH_W) '$(srcdir)/player/player.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) player/$(DEPDIR)/brio-player.Tpo player/$(DEPDIR)/brio-player.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='player/player.c' object='player/brio-player.obj' libtool=no @AMDEPBACKSLASH@
+cfg/brio_tg-configuration.obj: cfg/configuration.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(brio_tg_CFLAGS) $(CFLAGS) -MT cfg/brio_tg-configuration.obj -MD -MP -MF cfg/$(DEPDIR)/brio_tg-configuration.Tpo -c -o cfg/brio_tg-configuration.obj `if test -f 'cfg/configuration.c'; then $(CYGPATH_W) 'cfg/configuration.c'; else $(CYGPATH_W) '$(srcdir)/cfg/configuration.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) cfg/$(DEPDIR)/brio_tg-configuration.Tpo cfg/$(DEPDIR)/brio_tg-configuration.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='cfg/configuration.c' object='cfg/brio_tg-configuration.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(brio_CFLAGS) $(CFLAGS) -c -o player/brio-player.obj `if test -f 'player/player.c'; then $(CYGPATH_W) 'player/player.c'; else $(CYGPATH_W) '$(srcdir)/player/player.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(brio_tg_CFLAGS) $(CFLAGS) -c -o cfg/brio_tg-configuration.obj `if test -f 'cfg/configuration.c'; then $(CYGPATH_W) 'cfg/configuration.c'; else $(CYGPATH_W) '$(srcdir)/cfg/configuration.c'; fi`
 
-brio-bgpsecio.o: bgpsecio.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(brio_CFLAGS) $(CFLAGS) -MT brio-bgpsecio.o -MD -MP -MF $(DEPDIR)/brio-bgpsecio.Tpo -c -o brio-bgpsecio.o `test -f 'bgpsecio.c' || echo '$(srcdir)/'`bgpsecio.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/brio-bgpsecio.Tpo $(DEPDIR)/brio-bgpsecio.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='bgpsecio.c' object='brio-bgpsecio.o' libtool=no @AMDEPBACKSLASH@
+cfg/brio_tg-cfgFile.o: cfg/cfgFile.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(brio_tg_CFLAGS) $(CFLAGS) -MT cfg/brio_tg-cfgFile.o -MD -MP -MF cfg/$(DEPDIR)/brio_tg-cfgFile.Tpo -c -o cfg/brio_tg-cfgFile.o `test -f 'cfg/cfgFile.c' || echo '$(srcdir)/'`cfg/cfgFile.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) cfg/$(DEPDIR)/brio_tg-cfgFile.Tpo cfg/$(DEPDIR)/brio_tg-cfgFile.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='cfg/cfgFile.c' object='cfg/brio_tg-cfgFile.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(brio_CFLAGS) $(CFLAGS) -c -o brio-bgpsecio.o `test -f 'bgpsecio.c' || echo '$(srcdir)/'`bgpsecio.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(brio_tg_CFLAGS) $(CFLAGS) -c -o cfg/brio_tg-cfgFile.o `test -f 'cfg/cfgFile.c' || echo '$(srcdir)/'`cfg/cfgFile.c
 
-brio-bgpsecio.obj: bgpsecio.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(brio_CFLAGS) $(CFLAGS) -MT brio-bgpsecio.obj -MD -MP -MF $(DEPDIR)/brio-bgpsecio.Tpo -c -o brio-bgpsecio.obj `if test -f 'bgpsecio.c'; then $(CYGPATH_W) 'bgpsecio.c'; else $(CYGPATH_W) '$(srcdir)/bgpsecio.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/brio-bgpsecio.Tpo $(DEPDIR)/brio-bgpsecio.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='bgpsecio.c' object='brio-bgpsecio.obj' libtool=no @AMDEPBACKSLASH@
+cfg/brio_tg-cfgFile.obj: cfg/cfgFile.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(brio_tg_CFLAGS) $(CFLAGS) -MT cfg/brio_tg-cfgFile.obj -MD -MP -MF cfg/$(DEPDIR)/brio_tg-cfgFile.Tpo -c -o cfg/brio_tg-cfgFile.obj `if test -f 'cfg/cfgFile.c'; then $(CYGPATH_W) 'cfg/cfgFile.c'; else $(CYGPATH_W) '$(srcdir)/cfg/cfgFile.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) cfg/$(DEPDIR)/brio_tg-cfgFile.Tpo cfg/$(DEPDIR)/brio_tg-cfgFile.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='cfg/cfgFile.c' object='cfg/brio_tg-cfgFile.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(brio_CFLAGS) $(CFLAGS) -c -o brio-bgpsecio.obj `if test -f 'bgpsecio.c'; then $(CYGPATH_W) 'bgpsecio.c'; else $(CYGPATH_W) '$(srcdir)/bgpsecio.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(brio_tg_CFLAGS) $(CFLAGS) -c -o cfg/brio_tg-cfgFile.obj `if test -f 'cfg/cfgFile.c'; then $(CYGPATH_W) 'cfg/cfgFile.c'; else $(CYGPATH_W) '$(srcdir)/cfg/cfgFile.c'; fi`
 
-srx-common/brio_cache-server_socket.o: srx-common/server_socket.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(brio_cache_CFLAGS) $(CFLAGS) -MT srx-common/brio_cache-server_socket.o -MD -MP -MF srx-common/$(DEPDIR)/brio_cache-server_socket.Tpo -c -o srx-common/brio_cache-server_socket.o `test -f 'srx-common/server_socket.c' || echo '$(srcdir)/'`srx-common/server_socket.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) srx-common/$(DEPDIR)/brio_cache-server_socket.Tpo srx-common/$(DEPDIR)/brio_cache-server_socket.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='srx-common/server_socket.c' object='srx-common/brio_cache-server_socket.o' libtool=no @AMDEPBACKSLASH@
+player/brio_tg-player.o: player/player.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(brio_tg_CFLAGS) $(CFLAGS) -MT player/brio_tg-player.o -MD -MP -MF player/$(DEPDIR)/brio_tg-player.Tpo -c -o player/brio_tg-player.o `test -f 'player/player.c' || echo '$(srcdir)/'`player/player.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) player/$(DEPDIR)/brio_tg-player.Tpo player/$(DEPDIR)/brio_tg-player.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='player/player.c' object='player/brio_tg-player.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(brio_cache_CFLAGS) $(CFLAGS) -c -o srx-common/brio_cache-server_socket.o `test -f 'srx-common/server_socket.c' || echo '$(srcdir)/'`srx-common/server_socket.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(brio_tg_CFLAGS) $(CFLAGS) -c -o player/brio_tg-player.o `test -f 'player/player.c' || echo '$(srcdir)/'`player/player.c
 
-srx-common/brio_cache-server_socket.obj: srx-common/server_socket.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(brio_cache_CFLAGS) $(CFLAGS) -MT srx-common/brio_cache-server_socket.obj -MD -MP -MF srx-common/$(DEPDIR)/brio_cache-server_socket.Tpo -c -o srx-common/brio_cache-server_socket.obj `if test -f 'srx-common/server_socket.c'; then $(CYGPATH_W) 'srx-common/server_socket.c'; else $(CYGPATH_W) '$(srcdir)/srx-common/server_socket.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) srx-common/$(DEPDIR)/brio_cache-server_socket.Tpo srx-common/$(DEPDIR)/brio_cache-server_socket.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='srx-common/server_socket.c' object='srx-common/brio_cache-server_socket.obj' libtool=no @AMDEPBACKSLASH@
+player/brio_tg-player.obj: player/player.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(brio_tg_CFLAGS) $(CFLAGS) -MT player/brio_tg-player.obj -MD -MP -MF player/$(DEPDIR)/brio_tg-player.Tpo -c -o player/brio_tg-player.obj `if test -f 'player/player.c'; then $(CYGPATH_W) 'player/player.c'; else $(CYGPATH_W) '$(srcdir)/player/player.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) player/$(DEPDIR)/brio_tg-player.Tpo player/$(DEPDIR)/brio_tg-player.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='player/player.c' object='player/brio_tg-player.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(brio_cache_CFLAGS) $(CFLAGS) -c -o srx-common/brio_cache-server_socket.obj `if test -f 'srx-common/server_socket.c'; then $(CYGPATH_W) 'srx-common/server_socket.c'; else $(CYGPATH_W) '$(srcdir)/srx-common/server_socket.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(brio_tg_CFLAGS) $(CFLAGS) -c -o player/brio_tg-player.obj `if test -f 'player/player.c'; then $(CYGPATH_W) 'player/player.c'; else $(CYGPATH_W) '$(srcdir)/player/player.c'; fi`
 
-rpki-rtr-protocol/brio_cache-rpkirtr_svr.o: rpki-rtr-protocol/rpkirtr_svr.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(brio_cache_CFLAGS) $(CFLAGS) -MT rpki-rtr-protocol/brio_cache-rpkirtr_svr.o -MD -MP -MF rpki-rtr-protocol/$(DEPDIR)/brio_cache-rpkirtr_svr.Tpo -c -o rpki-rtr-protocol/brio_cache-rpkirtr_svr.o `test -f 'rpki-rtr-protocol/rpkirtr_svr.c' || echo '$(srcdir)/'`rpki-rtr-protocol/rpkirtr_svr.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) rpki-rtr-protocol/$(DEPDIR)/brio_cache-rpkirtr_svr.Tpo rpki-rtr-protocol/$(DEPDIR)/brio_cache-rpkirtr_svr.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='rpki-rtr-protocol/rpkirtr_svr.c' object='rpki-rtr-protocol/brio_cache-rpkirtr_svr.o' libtool=no @AMDEPBACKSLASH@
+brio_tg-bgpsecio.o: bgpsecio.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(brio_tg_CFLAGS) $(CFLAGS) -MT brio_tg-bgpsecio.o -MD -MP -MF $(DEPDIR)/brio_tg-bgpsecio.Tpo -c -o brio_tg-bgpsecio.o `test -f 'bgpsecio.c' || echo '$(srcdir)/'`bgpsecio.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/brio_tg-bgpsecio.Tpo $(DEPDIR)/brio_tg-bgpsecio.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='bgpsecio.c' object='brio_tg-bgpsecio.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(brio_cache_CFLAGS) $(CFLAGS) -c -o rpki-rtr-protocol/brio_cache-rpkirtr_svr.o `test -f 'rpki-rtr-protocol/rpkirtr_svr.c' || echo '$(srcdir)/'`rpki-rtr-protocol/rpkirtr_svr.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(brio_tg_CFLAGS) $(CFLAGS) -c -o brio_tg-bgpsecio.o `test -f 'bgpsecio.c' || echo '$(srcdir)/'`bgpsecio.c
 
-rpki-rtr-protocol/brio_cache-rpkirtr_svr.obj: rpki-rtr-protocol/rpkirtr_svr.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(brio_cache_CFLAGS) $(CFLAGS) -MT rpki-rtr-protocol/brio_cache-rpkirtr_svr.obj -MD -MP -MF rpki-rtr-protocol/$(DEPDIR)/brio_cache-rpkirtr_svr.Tpo -c -o rpki-rtr-protocol/brio_cache-rpkirtr_svr.obj `if test -f 'rpki-rtr-protocol/rpkirtr_svr.c'; then $(CYGPATH_W) 'rpki-rtr-protocol/rpkirtr_svr.c'; else $(CYGPATH_W) '$(srcdir)/rpki-rtr-protocol/rpkirtr_svr.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) rpki-rtr-protocol/$(DEPDIR)/brio_cache-rpkirtr_svr.Tpo rpki-rtr-protocol/$(DEPDIR)/brio_cache-rpkirtr_svr.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='rpki-rtr-protocol/rpkirtr_svr.c' object='rpki-rtr-protocol/brio_cache-rpkirtr_svr.obj' libtool=no @AMDEPBACKSLASH@
+brio_tg-bgpsecio.obj: bgpsecio.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(brio_tg_CFLAGS) $(CFLAGS) -MT brio_tg-bgpsecio.obj -MD -MP -MF $(DEPDIR)/brio_tg-bgpsecio.Tpo -c -o brio_tg-bgpsecio.obj `if test -f 'bgpsecio.c'; then $(CYGPATH_W) 'bgpsecio.c'; else $(CYGPATH_W) '$(srcdir)/bgpsecio.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/brio_tg-bgpsecio.Tpo $(DEPDIR)/brio_tg-bgpsecio.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='bgpsecio.c' object='brio_tg-bgpsecio.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(brio_cache_CFLAGS) $(CFLAGS) -c -o rpki-rtr-protocol/brio_cache-rpkirtr_svr.obj `if test -f 'rpki-rtr-protocol/rpkirtr_svr.c'; then $(CYGPATH_W) 'rpki-rtr-protocol/rpkirtr_svr.c'; else $(CYGPATH_W) '$(srcdir)/rpki-rtr-protocol/rpkirtr_svr.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(brio_tg_CFLAGS) $(CFLAGS) -c -o brio_tg-bgpsecio.obj `if test -f 'bgpsecio.c'; then $(CYGPATH_W) 'bgpsecio.c'; else $(CYGPATH_W) '$(srcdir)/bgpsecio.c'; fi`
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -1623,10 +1622,10 @@ clean-am: clean-brioPROGRAMS clean-generic clean-libtool \
 
 distclean: distclean-recursive
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
-		-rm -f ./$(DEPDIR)/brio-ASList.Po
-	-rm -f ./$(DEPDIR)/brio-ASNTokenizer.Po
-	-rm -f ./$(DEPDIR)/brio-bgpsecio.Po
-	-rm -f ./$(DEPDIR)/brio-updateStackUtil.Po
+		-rm -f ./$(DEPDIR)/brio_tg-ASList.Po
+	-rm -f ./$(DEPDIR)/brio_tg-ASNTokenizer.Po
+	-rm -f ./$(DEPDIR)/brio_tg-bgpsecio.Po
+	-rm -f ./$(DEPDIR)/brio_tg-updateStackUtil.Po
 	-rm -f antd-util/$(DEPDIR)/linked_list.Plo
 	-rm -f antd-util/$(DEPDIR)/log.Plo
 	-rm -f antd-util/$(DEPDIR)/prefix.Plo
@@ -1642,11 +1641,11 @@ distclean: distclean-recursive
 	-rm -f bgp/printer/$(DEPDIR)/libbrio_bgp_la-BGPUpdatePrinter.Plo
 	-rm -f bgpsec/$(DEPDIR)/libbrio_bgp_la-BGPSecPathBin.Plo
 	-rm -f bgpsec/$(DEPDIR)/libbrio_bgp_la-Crypto.Plo
-	-rm -f cfg/$(DEPDIR)/brio-cfgFile.Po
-	-rm -f cfg/$(DEPDIR)/brio-configuration.Po
-	-rm -f player/$(DEPDIR)/brio-player.Po
-	-rm -f rpki-rtr-protocol/$(DEPDIR)/brio_cache-rpkirtr_svr.Po
-	-rm -f srx-common/$(DEPDIR)/brio_cache-server_socket.Po
+	-rm -f cfg/$(DEPDIR)/brio_tg-cfgFile.Po
+	-rm -f cfg/$(DEPDIR)/brio_tg-configuration.Po
+	-rm -f player/$(DEPDIR)/brio_tg-player.Po
+	-rm -f rpki-rtr-protocol/$(DEPDIR)/brio_rc-rpkirtr_svr.Po
+	-rm -f srx-common/$(DEPDIR)/brio_rc-server_socket.Po
 	-rm -f srx-common/$(DEPDIR)/libsrx_common_la-debug.Plo
 	-rm -f srx-common/$(DEPDIR)/libsrx_common_la-mutex.Plo
 	-rm -f srx-common/$(DEPDIR)/libsrx_common_la-rwlock.Plo
@@ -1701,10 +1700,10 @@ installcheck-am:
 maintainer-clean: maintainer-clean-recursive
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
 	-rm -rf $(top_srcdir)/autom4te.cache
-		-rm -f ./$(DEPDIR)/brio-ASList.Po
-	-rm -f ./$(DEPDIR)/brio-ASNTokenizer.Po
-	-rm -f ./$(DEPDIR)/brio-bgpsecio.Po
-	-rm -f ./$(DEPDIR)/brio-updateStackUtil.Po
+		-rm -f ./$(DEPDIR)/brio_tg-ASList.Po
+	-rm -f ./$(DEPDIR)/brio_tg-ASNTokenizer.Po
+	-rm -f ./$(DEPDIR)/brio_tg-bgpsecio.Po
+	-rm -f ./$(DEPDIR)/brio_tg-updateStackUtil.Po
 	-rm -f antd-util/$(DEPDIR)/linked_list.Plo
 	-rm -f antd-util/$(DEPDIR)/log.Plo
 	-rm -f antd-util/$(DEPDIR)/prefix.Plo
@@ -1720,11 +1719,11 @@ maintainer-clean: maintainer-clean-recursive
 	-rm -f bgp/printer/$(DEPDIR)/libbrio_bgp_la-BGPUpdatePrinter.Plo
 	-rm -f bgpsec/$(DEPDIR)/libbrio_bgp_la-BGPSecPathBin.Plo
 	-rm -f bgpsec/$(DEPDIR)/libbrio_bgp_la-Crypto.Plo
-	-rm -f cfg/$(DEPDIR)/brio-cfgFile.Po
-	-rm -f cfg/$(DEPDIR)/brio-configuration.Po
-	-rm -f player/$(DEPDIR)/brio-player.Po
-	-rm -f rpki-rtr-protocol/$(DEPDIR)/brio_cache-rpkirtr_svr.Po
-	-rm -f srx-common/$(DEPDIR)/brio_cache-server_socket.Po
+	-rm -f cfg/$(DEPDIR)/brio_tg-cfgFile.Po
+	-rm -f cfg/$(DEPDIR)/brio_tg-configuration.Po
+	-rm -f player/$(DEPDIR)/brio_tg-player.Po
+	-rm -f rpki-rtr-protocol/$(DEPDIR)/brio_rc-rpkirtr_svr.Po
+	-rm -f srx-common/$(DEPDIR)/brio_rc-server_socket.Po
 	-rm -f srx-common/$(DEPDIR)/libsrx_common_la-debug.Plo
 	-rm -f srx-common/$(DEPDIR)/libsrx_common_la-mutex.Plo
 	-rm -f srx-common/$(DEPDIR)/libsrx_common_la-rwlock.Plo
@@ -1780,8 +1779,8 @@ uninstall-am: uninstall-brioPROGRAMS uninstall-dist_binSCRIPTS
 
 distclean-local:
 	rm -f *.spec;            \
-	rm -f bgpsecio-*.rpm;    \
-	rm -f bgpsecio-*.tar.gz; \
+	rm -f bgprpki-*.rpm;    \
+	rm -f bgprpki-*.tar.gz; \
 	rm -rf autom4te.cache;
 
 rpmcheck:
@@ -1801,6 +1800,11 @@ rpms: dist rpmcheck $(rpmspec)
 
 dist-hook:
 	rm -rf `find $(distdir) -name .svn`
+
+# Allows README.md in lieu of README. Another option is to declare the project
+# as foreign in AUTOMAKE_OPTIONS in configure.ac or create a symbolic link 
+# from README to README.md
+README: README.md
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

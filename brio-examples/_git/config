@@ -1,0 +1,15 @@
+[core]
+	repositoryformatversion = 0
+	filemode = true
+	bare = false
+	logallrefupdates = true
+	ignorecase = true
+	precomposeunicode = true
+[remote "origin"]
+	url = git@gitlab.nist.gov:antd/proj-ridr/bgp-srx/examples.git
+	fetch = +refs/heads/*:refs/remotes/origin/*
+[branch "brio"]
+	remote = origin
+	merge = refs/heads/brio
+	vscode-merge-base = origin/master
+	vscode-merge-base = origin/master

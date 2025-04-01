@@ -1,0 +1,47 @@
+Version b0.7.0.1
+  * Added ASPA examples
+  * Modified example configuration, installation, and start framework.
+  * When markdown files link to .tpl files, the .tpl suffix will me rewritten
+    into .conf for the installed files.
+Version 0.6.3.1
+  * Updated the ASPA commands of all rpki_cache.script files by
+    removing the AFI entry.
+Version 0.6.3.0
+  * Removed loopback, it provided big problems in the examples.
+  * Fixed address assignments in example templates.
+  * Fixed bio templates using the proper key lists.
+Version 0.6.2.0
+  * Modified the IP generation for missing interface addresses to use
+    the loopback address range.
+Version 0.6.1.0
+  * Added the Test Framework Generator for ASPA
+Version 0.6.0.3
+  * Suppress bio warning when running test cases.
+Version 0.6.0.2
+  * Added VERSION tag into start_example.sh
+  * Added --suppress-warning to start_example.sh to shorten
+    newly added warning string from BGPsec-IO
+  * Added additional experiment for ASPA with the focus on the algorithm fix.
+Versoin 0.6.0.1
+  * Fixed minor bugs.
+Version 0.6.0.0 (Pre-Release)
+  * Added ASPA 
+Version 0.5.1.11
+  * Removed sudo test - it is just annoying when not needed.
+  * Fixed bug for where configuration prematurely stops when the number
+    of available IP addresses is enough.
+Version 0.5.1.10
+  * Added "t" to list of interfaces not to use for alias generation.
+Version 0.5.1.9
+  * Fixed minor bug in configuration script
+  * Added proper IP configuration to configuration script
+  * Added lib/ip_tools.sh providing helper functions for configuration
+  * Added files AUTHORS, COPYING, and ChangeLog
+Version 0.5.1.8
+  * Fixed all examples and synchronized them with the latest topology used.
+Version 0.5.1.7
+  * Updated README.md
+Version 0.5.1.6
+  * Fixed error in prefix Announcement for AS65005
+Version 0.5.1.5
+  * Project Added to BGP-SRx Software Suite V5.1.

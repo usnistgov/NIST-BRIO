@@ -72,8 +72,9 @@ The BRIO Framework is tested on Linux Rocky 9 installations.
 ## Installation
 To compile and build BRIO just call the included build shell script. This 
 script allows to specify the folder where the software package will be installed
-in. ./build... -i sandbox  will build and install the framework inthe folder
-sandbox. The installed code will be in the embedded local filder.
+in. ./build... -i sandbox  will build and install the framework in the folder
+sandbox. The installed code will be in the embedded local folder.
 
 ## Contact &  ???
-For Questions and/or BUG reports please email to bgpsec-dev@nist.gov
+For Questions and/or BUG reports please email to itrg-contact@list.nist.gov
+with \[BRIO-TG\] in the subject line.

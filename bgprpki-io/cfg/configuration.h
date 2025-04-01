@@ -22,10 +22,23 @@
  *
  * This header file contains data structures needed for the application.
  * 
- * @version 0.2.3.0
+ * @version 0.7.0.1
  * 
  * ChangeLog:
  * -----------------------------------------------------------------------------
+ *  0.7.0.1 - 2025/03/24 - oborchert
+ *            * Added capability to disable BGPsec (--disable_bgpsec) via 
+ *              parameter and configuration file.
+ *            * Added short help in case no parameters are passed!
+ *          - 2025/03/20 - oborchert
+ *            * Added processing of parameter --show-setting
+ *          - 2025/02/10 - oborchert
+ *            * Added defines if config.h is not available. Mainly to remove
+ *              development IDE issues for code parsers. 
+ *  0.3.0.1 - 2025/01/27 - oborchert
+ *            * Updated to-year
+ *          - 2024/12/11 - oborchert
+ *            * Udated PRG_NAME to reflect brio_tg if not already defined
  *  0.2.3.0 - 2024/08/21 - oborchert
  *            * Modified to year
  *  0.2.1.11- 2021/10/27 - oborchert
@@ -153,8 +166,12 @@
 #define PRG_NAME    PACKAGE
 #define PRG_VERSION "V" VERSION
 #else
-#define PRG_NAME    "bgpsecio"
+#define PRG_NAME    "brio_tg"
 #define PRG_VERSION ""
+#define PACKAGE_NAME      "BRIO"
+#define PACKAGE_VERSION   ""
+#define PACKAGE_BUGREPORT "itrg-contact@list.nist.gov"
+#define PACKAGE_STRING    "brio_tg"
 #endif
 
 // CONFIG_INT will be set to int for 64 bit platform during configure. See
@@ -165,14 +182,14 @@
 
 // Can be overwritten in configure.ac if needed.
 #ifndef SRX_DEV_TOYEAR
-#define SRX_DEV_TOYEAR "2024"
+#define SRX_DEV_TOYEAR "2025"
 #endif
 
 /******************************************************************************/
 /***  Defines for default BGP session configuration  **************************/
 /******************************************************************************/
 // The default location where to find the keys
-#define DEF_KEYLOCATION        "/opt/bgp-srx-examples/bgpsec-keys/"
+#define DEF_KEYLOCATION        "/opt/brio-examples/bgpsec-keys/"
 // The default file containing the list of public keys
 #define DEF_SKIFILE            DEF_KEYLOCATION "ski-list.txt\0"
 // The default port of the peer
@@ -229,20 +246,27 @@
 #define P_TYPE_SIGMODE_BIO_K2 "BIO-K2"
 
 // -?                   -help screen
-#define P_HELP          "--help"
-#define P_C_HELP        '?'
-#define P_C_HELP_1      'h'
-#define P_C_HELP_2      'H'
+#define P_HELP            "--help"
+#define P_C_HELP          '?'
+#define P_C_HELP_1        'h'
+#define P_C_HELP_2        'H'
 
 // Display the version number
-#define P_VERSION       "--version"
-#define P_C_VERSION     'V'
+#define P_VERSION         "--version"
+#define P_C_VERSION       'V'
+
+// Display confirued settins only
+#define P_SHOW_SETTINGS   "--show-settings"
 
 // Suppress the WARNING message
 #define P_SUPRESS_WARNING "--suppress-warning"
 
 // for the configuration file
 #define P_CFG_SESSION   "session"
+
+// Allow to disable BGPsec modes
+#define P_CFG_NO_BGPSEC "disable_bgpsec"
+#define P_NO_BGPSEC     "--" P_CFG_NO_BGPSEC
 
 // update="<prefix>,<path>"   - Can be used multiple times
 #define P_CFG_UPD_PARAM "update"
@@ -532,7 +556,8 @@ typedef enum OP_Mode
   OPM_GEN_B  = 0,
   OPM_GEN_C  = 1,
   OPM_BGP    = 2,
-  OPM_CAPI   = 3        
+  OPM_CAPI   = 3,
+  OPM_NONE   = 4   // Used for show settings.        
 } OP_Mode;
 
 /** This structure is used to allow the parameter parsing outside of the 
@@ -624,12 +649,23 @@ typedef struct
   /* The interface where the local IP address information are retrieved from.
    * This setting is ONLY ALLOWED in combination with -C */
   char      iface[IFACE_STRING];
+  /** Used to display the settings and then end. */
+  bool      showSettings;
+  /** Used to disable BGPsec processing. (Makes all updates B4 updates) */
+  bool      disableBGPsec;
 } PrgParams;
 
 /**
  * Print the program Syntax.
  */
 void printSyntax();
+
+/**
+ * Print the short Syntax.
+ * 
+ * @since 0.7.0.1 - Was part of printSyntax prior
+ */
+void printShortSyntax();
 
 /**
  * Translate the given parameter in a one character parameter if possible or 0 
@@ -721,5 +757,14 @@ UpdateData* createUpdate(char* prefix_path, PrgParams* params);
  * @param update The update parameter that has to be freed.
  */
 void freeUpdateData(void* upd);
+
+/** 
+ * Display the configured parameters.
+ * 
+ * @param params The program parameters.
+ * 
+ * @since b0.7.0.1
+ */
+void printSettings(PrgParams* params);
 
 #endif	/* CONFIGURATION_H */

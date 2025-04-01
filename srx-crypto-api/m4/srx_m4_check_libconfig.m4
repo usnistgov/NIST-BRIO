@@ -13,8 +13,7 @@ AC_DEFUN([SRX_M4_CHECK_LIBCONFIG], [
   if test "${HAVE_LIBCONFIG}" = "0"; then
     AC_MSG_ERROR([
     --------------------------------------------------
-    The library 'libconfig' is required to build 
-    srx_server.
+    The library 'libconfig' is required to build SCA.
     --------------------------------------------------])
   fi
 

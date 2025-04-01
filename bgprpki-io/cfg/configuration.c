@@ -21,10 +21,17 @@
  *
  * This header file contains data structures needed for the application.
  *
- * @version 0.2.3.0
+ * @version b0.7.0.1
  * 
  * ChangeLog:
  * -----------------------------------------------------------------------------
+ *  b0.7.0.1- 2025/03/28 - oborchert
+ *            * Added more information to --show-settings.
+ *          - 2025/03/24 - oborchert
+ *            * Added --disable_bgpsec and made BGP the default operating mode.
+ *            * Added short help in case no parameters are passed!
+ *          - 2025/03/20 - oborchert
+ *            * Added processing of parameter --show-settings
  *  0.2.3.0 - 2024/08/21 - oborchert
  *            * Synchronize with header file.
  *            * Fixed speller in syntax description.
@@ -226,16 +233,50 @@ static void _setErrMsg(PrgParams* param, char* str)
   memcpy(&param->errMsgBuff, str, size);
 }
 
+/**
+ * Print the footer for printSyntax and printShortSyntax
+ * 
+ * @since 0.7.0.1 - Was part of printSyntax prior
+ */
+static void _printFooter()
+{
+  printf ("NIST-SRx %s Version %s\n\nDeveloped 2015-%s by Oliver Borchert - NIST\n", 
+    PACKAGE_NAME, PACKAGE_VERSION, SRX_DEV_TOYEAR);
+  printf ("Send bug reports to %s\n\n", PACKAGE_BUGREPORT);
+}
+
+/**
+ * Print the header for printSyntax and printPrgName
+ * 
+ * @since 0.7.0.1 - Was part of printSyntax prior
+ */
+static void _printHeader()
+{
+  printf ("\nSyntax: %s <parameter> [<parameter>]*\n\n", PRG_NAME);
+  printf (" This program allows receiving updates via pipe stream, one update"
+          " per line.\n");  
+}
+
+/**
+ * Print the short Syntax.
+ * 
+ * @since 0.7.0.1 - Was part of printSyntax prior
+ */
+void printShortSyntax()
+{
+  _printHeader();
+  printf (" Use -%c, -%c, -%c, %s for more information!\n\n", 
+          P_C_HELP, P_C_HELP_1, P_C_HELP_2, P_HELP);
+  _printFooter();
+}
 
 /**
  * Print the program Syntax.
  */
 void printSyntax()
 {
-  printf ("\nSyntax: %s [parameters]\n", PRG_NAME);
-  printf (" This program allows receiving updates via pipe stream, one update"
-          " per line.\n");
-  printf ("\n Parameters:\n");
+  _printHeader();
+  printf ("\n Parameter:\n");
   printf (" ===========\n");
   // Help
   printf ("  -%c, -%c, -%c, %s\n", P_C_HELP, P_C_HELP_1, P_C_HELP_2, P_HELP);
@@ -366,6 +407,13 @@ void printSyntax()
   printf ("  %s\n", P_SUPRESS_WARNING);
   printf ("          This setting disables the programs WARNING message\n");
   printf ("          this software is for test purpose only.\n");
+
+  printf ("  %s\n", P_SHOW_SETTINGS);
+  printf ("          Display the configured settings and stop application.\n");
+
+  printf ("  %s\n", P_NO_BGPSEC);
+  printf ("          Disable BGPsec processing and generate all updates as\n");
+  printf ("          BGP 4 updates only. This only works in 'BGP' mode.\n");
   
   printf ("\n Configuration file only parameters:\n");
   printf (" ===================================\n");
@@ -480,9 +528,7 @@ void printSyntax()
   printf ("          This setting only affects the CAPI mode.\n");
   
   printf ("\n");
-  printf ("NIST-SRx %s Version %s\n\nDeveloped 2015-%s by Oliver Borchert - NIST\n", 
-          PACKAGE_NAME, PACKAGE_VERSION, SRX_DEV_TOYEAR);
-  printf ("Send bug reports to %s\n\n", PACKAGE_BUGREPORT);
+  _printFooter();
 }
 
 /**
@@ -634,7 +680,7 @@ void postProcessUpdateStack(PrgParams* params)
  * properly distributes prior this call.
  * 
  * @param params The parameters / configurations.
- * 
+ * P_TYPE_GENC
  * @return true if BGP daemon can be started, false if not. 
  */
 bool checkBGPConfig(PrgParams* params)
@@ -715,7 +761,7 @@ UpdateData* createUpdate(char* prefix_path, PrgParams* params)
   int   psStrLen  = 0;
   int   pfxStrLen = 0;
   bool  startProcess = true;
-  bool  bgp4_only    = false;
+  bool  bgp4_only    = params->disableBGPsec;
   
   memset (&prefix, 0, sizeof(IPPrefix));
   
@@ -1131,7 +1177,12 @@ bool readConfig(PrgParams* params)
   // Try to parse the configuration file
   int cfgFile = config_read_file(&cfg, params->cfgFile);
   if (cfgFile == CONFIG_TRUE)
-  {    
+  {  
+    if (config_lookup_bool(&cfg, P_CFG_NO_BGPSEC, (int*)&intVal) == CONFIG_TRUE)
+    {
+      params->disableBGPsec = (bool)intVal;
+    } 
+
     if (config_lookup_string(&cfg, P_CFG_SKI_FILE, &strVal) == CONFIG_TRUE)
     {
       snprintf((char*)&params->skiFName, FNAME_SIZE, "%s", strVal);
@@ -1637,9 +1688,13 @@ void initParams(PrgParams* params)
   params->sessionCount      = 1;
   initBGPSessionConfig(params->sessionConf[0]);
           
+  params->type                        = OPM_BGP;
+
   params->preloadECKEY                = true;
   params->onlyExtLength               = true;
   params->appendOut                   = false;
+  params->showSettings                = false;
+  params->disableBGPsec               = false;
   
   // Used to identify if the software warning at the beginning can be suppressed
   params->suppressWarning             = false;
@@ -1696,6 +1751,12 @@ int parseParams(PrgParams* params, int argc, char** argv)
   int retVal = 1;
   bool loadCfgScript = false;
   BGP_SessionConf* bgpConf = NULL;
+
+  if (argc <= 1)
+  {
+    printShortSyntax(); 
+    retVal = 0;
+  }
 
   // first check for help
   while (idx < argc && params->errMsgBuff[0] == '\0')
@@ -1837,7 +1898,7 @@ int parseParams(PrgParams* params, int argc, char** argv)
 
       case P_C_PEER_AS:
         if (++idx >= argc) 
-        { _setErrMsg(params, "Peer AS not specified!"); break; }
+          { _setErrMsg(params, "Peer AS not specified!"); break; }
         bgpConf->peerAS = atoi(argv[idx]);
         break;
 
@@ -1861,7 +1922,7 @@ int parseParams(PrgParams* params, int argc, char** argv)
         
       case P_C_PEER_PORT:
         if (++idx >= argc) 
-        { _setErrMsg(params, "Peer port not specified!"); break; }
+          { _setErrMsg(params, "Peer port not specified!"); break; }
         _setIPAddress(NULL, atoi(argv[idx]), &bgpConf->peer_addr);
         break;
         
@@ -1883,7 +1944,7 @@ int parseParams(PrgParams* params, int argc, char** argv)
         
       case P_C_DISCONNECT_TIME:
         if (++idx >= argc) 
-        { _setErrMsg(params, "Disconnect time not specified!"); break; }
+          { _setErrMsg(params, "Disconnect time not specified!"); break; }
         bgpConf->disconnectTime = atoi(argv[idx]);
         break;
         
@@ -1930,6 +1991,16 @@ int parseParams(PrgParams* params, int argc, char** argv)
         else if (strcmp(argv[idx], P_SUPRESS_WARNING) == 0)
         {
           params->suppressWarning = true;
+          break;
+        }
+        else if (strcmp(argv[idx], P_SHOW_SETTINGS) == 0)
+        {
+          params->showSettings = true;
+          break;
+        }
+        else if (strcmp(argv[idx], P_NO_BGPSEC) == 0)
+        {
+          params->disableBGPsec = true;
           break;
         }
         snprintf(params->errMsgBuff, PARAM_ERRBUF_SIZE, 
@@ -2031,4 +2102,203 @@ void cleanupParams(PrgParams* params, bool doFree)
   {
     free(params);
   }
+}
+
+/**
+ * Print the configured UPDATE stack
+ * 
+ * @param stack The pointer to the stack
+ * 
+ * @since b0.7.0.1
+ */
+void _printUpdateStack(Stack* stack)
+{
+  ListElem*   elem = NULL;
+  UpdateData* update = NULL;
+
+  if (stack != NULL)
+  {
+    elem = stack->head;
+    while (elem != NULL)
+    {
+      update = elem->elem;
+      printf("    BRIO update: ");
+      if (update->bgp4_only)
+      {
+        printf ("B4");
+      }
+      if (update->pathStr != NULL)
+      {
+        printf (" %s", update->pathStr);
+      }
+      if (update->asSetStr != NULL)
+      {
+        printf (" {%s}", update->asSetStr);
+      }
+      if (update->validation != UPD_RPKI_NONE)
+      {
+        printf (" %c", update->validation);
+      }
+      // TODO: Add the prefix
+      printf("\n");
+      elem = elem->next;
+    }
+  }
+}
+
+/** 
+ * Print the provided Capabilities
+ * 
+ * @param tab The tab to be printed before the capabilities. Must be \0 
+ *            terminated or can be NULL.
+ * @param cap Pointer to the capabilities.
+ * 
+ * @sinec b0.7.0.1 
+ */
+void __printCapabilities(char* tab, BGP_Cap_Conf* capConf)
+{
+  const char* yes = "on\0";
+  const char* no  = "off\0";
+  if (capConf != NULL)
+  {
+    // Indicates the usage of IPv4 MPNLRI encoding
+    printf("%smpnlri_v4........: %s\n", tab, capConf->mpnlri_v4 ? yes : no);
+    // Indicates the usage of IPv6 MPNLRI encoding
+    printf("%smpnlri_v6........: %s\n", tab, capConf->mpnlri_v6 ? yes : no);
+    // Indicates the usage of 4 byte ASN numbers
+    printf("%sasn_4byte........: %s\n", tab, capConf->asn_4byte ? yes : no);
+    // Indicates if the session supports route refresh
+    printf("%sroute_refresh....: %s\n", tab, capConf->route_refresh ? yes : no);
+    // Indicates if the session supports BGP updates larger than 4096 bytes
+    printf("%sextMsgSupp.......: %s\n", tab, capConf->extMsgSupp ? yes : no);
+    // Indicates if the session processed extended capability liberal or strict
+    printf("%sextMsgLiberal....: %s\n", tab, capConf->extMsgLiberal ? yes : no);
+    // Allows testing the peer by sending extended messages regardless if 
+    // negotiated or not!
+    printf("%sextMsgForce......: %s\n", tab, capConf->extMsgForce ? yes : no);
+    // Indicates if BGPSEC IPv4 Updates can be send
+    printf("%sbgpsec_snd_v4....: %s\n", tab, capConf->bgpsec_snd_v4 ? yes : no);
+    // Indicates if BGPSEC IPv6 Updates can be send
+    printf("%sbgpsec_snd_v6....: %s\n", tab, capConf->bgpsec_snd_v6 ? yes : no);
+    // Indicates if BGPSEC IPv4 Updates can be received
+    printf("%sbgpsec_rcv_v4....: %s\n", tab, capConf->bgpsec_rcv_v4 ? yes : no);
+    // Indicates if BGPSEC IPv6 Updates can be received
+    printf("%sbgpsec_rcv_v6....: %s\n", tab, capConf->bgpsec_rcv_v6 ? yes : no);
+  }
+  else
+  {
+    printf("%sNo capabilities available!\n", tab);
+  }
+}
+
+/**
+ * Print the configured session
+ * 
+ * @param stack The pointer to the stack
+ * 
+ * @since b0.7.0.1
+ */
+void _printSession(BGP_SessionConf* conf)
+{
+  uint32_t ip;
+  printf("  algoID....................: %i\n", conf->algoParam.algoID);
+  printf("  asn.......................: %i\n", conf->asn);
+  ip = ntohl(conf->bgpIdentifier);
+  printf("  bgpIdentifier.............: [0x%08X] %i.%i.%i.%i\n", ip,
+                                                (ip & 0xFF000000) >> 24,
+                                                (ip & 0x00FF0000) >> 16,
+                                                (ip & 0x0000FF00) >> 8,
+                                                (ip & 0x000000FF));
+  printf("  localAddr.................: '%s'\n", conf->localAddr);
+  printf("  nextHopV4.................: %p\n", &conf->nextHopV4);
+  printf("  nextHopV6.................: %p\n", &conf->nextHopV6);
+  printf("  useMPNLRI.................: %s\n", conf->useMPNLRI
+                                               ? "true" : "false");
+  printf("  disconnectTime............: %i\n", conf->disconnectTime);
+  printf("  display_convergenceTime...: %i\n", conf->display_convergenceTime);
+  printf("  holdTime..................: %i\n", conf->holdTime);
+  
+  printf("\n  peerAS....................: %i\n", conf->peerAS);
+  printf("  peer_addr.................: %p\n", &conf->peer_addr);
+  printf("  capConf...................: (Session Capabilities)\n");
+  __printCapabilities("    ", &conf->capConf);
+  //printf("  peerCap...................: (Peer Capabilities)\n");
+  //__printCapabilities("    ", &conf->peerCap);
+  // conf->peerCap  <--- Not yet established                                                                                      
+
+  printf("\n  prefixPacking.............: %s\n", conf->prefixPacking 
+                                               ? "true" : "false");
+  printf("  inclGlobalUpdates.........: %s\n", conf->inclGlobalUpdates                                                
+                                               ? "true" : "false");
+  printf("  updateStack...............: %i updates\n", conf->updateStack.count);
+  _printUpdateStack(&conf->updateStack);
+                                           
+  printf("\n  printOnInvalid............: %s\n", conf->printOnInvalid
+                                               ? "true" : "false");
+  printf("  printOnReceive............: %s\n", conf->printOnReceive
+                                               ? "true" : "false");
+  printf("  printOnSend...............: %s\n", conf->printOnSend
+                                               ? "true" : "false");
+  printf("  printPollLoop.............: %s\n", conf->printPollLoop
+                                               ? "true" : "false");
+  printf("  printSimple...............: %s\n", conf->printSimple
+                                               ? "true" : "false");
+}
+
+/** 
+ * Display the configured parameters.
+ * 
+ * @param params The program parameters.
+ * 
+ * @since b0.7.0.1
+ */
+void printSettings(PrgParams* params)
+{
+  printf("capiCfgFileName....: '%s'\n", params->capiCfgFileName);
+  printf("cfgFile............: '%s'\n", params->cfgFile);
+  printf("createCfgFile......: %i\n", params->createCfgFile);
+  printf("errMsgBuff.........: '%s'\n", params->errMsgBuff);
+  printf("iface..............: '%s'\n", params->iface);
+  printf("maxUpdates.........: '%i'\n", params->maxUpdates);
+  printf("newCfgFileName.....: '%s'\n", params->newCfgFileName);
+  printf("onlyExtLength......: %s\n", params->onlyExtLength 
+                                        ? "true" : "false");
+  printf("rpkiCache..........: Port %i\n", params->rpkiCache.port);
+  //params->showSettings;
+  printf("suppressWarning....: %s\n", params->suppressWarning 
+                                        ? "true" : "false");
+  printf("type...............: ");
+  switch (params->type)
+  {
+    case OPM_BGP   : printf ("BPG\n"); break;
+    case OPM_CAPI  : printf ("CAPI\n"); break;
+    case OPM_GEN_B : printf ("GEN_B\n"); break;
+    case OPM_GEN_C : printf ("GEN_C\n"); break;
+    case OPM_NONE  : printf ("NONE\n"); break;
+  }
+  printf("disableBGPsec......: %s\n", params->disableBGPsec
+    ? "true" : "false");
+  printf("keyLocation........: '%s'\n", params->keyLocation);
+  printf("skiFName...........: '%s'\n", params->skiFName);
+  printf("preloadECKEY.......: %i\n", params->preloadECKEY);
+
+  printf("\nbinInFile..........: '%s'\n", params->binInFile);
+  printf("binOutFile.........: '%s'\n", params->binOutFile);
+  printf("appendOut..........: %i\n", params->appendOut);
+
+  printf("\nuseStdIn...........: %s\n", params->useStdIn 
+                                          ? "true" : "false");
+  printf("paramUpdateStack...: %i updates\n", params->paramUpdateStack.count);
+    _printUpdateStack(&params->paramUpdateStack);
+
+  printf("\nglobalUpdateStack..: %i updates\n", params->globalUpdateStack.count);
+  _printUpdateStack(&params->globalUpdateStack);
+
+  printf("\nsessionCount.......: %i\n", params->sessionCount);
+  for (int idx = 0; idx < params->sessionCount; idx++)
+  {
+    printf("sessionConf........: Session %i\n", idx);
+      _printSession(params->sessionConf[idx]);
+  }
+  printf("\n");
 }

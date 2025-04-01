@@ -1,19 +1,37 @@
-This folder contains NIST BRIO Software Suite Vb6.4.1
+This folder contains NIST BRIO Software Suite Vb7.0.1
  * srx-crypto-api V0.3.0.6_release
- * bgprpki-io version_b0.3.0.1
+ * bgprpki-io version_b0.7.0.1
+ * brio-examples b0.7.0.1_release
 
 Comments for this software package:
 ===================================
-* srx-crypto-api 0.3.0.6_release developed and tested under CentOS / Rocky 9.
+* srx-crypto-api 0.3.0.6_release developed and tested under CentOS.
   - requires gcc
   - requires libconfig-devel
   - requires openssl-devel
   - requires uthash-devel
-* bgprpki-io version_b0.3.0.1 developed and tested under Rocky 9.
+* bgprpki-io version_b0.7.0.1 developed and tested under Rocky 9.
   - requires gcc
   - requires libconfig-devel
   - requires openssl-devel
   - requires readline-devel
+* examples b0.7.0.1_release developed and tested under under CentOS.
+  Contains example scripts as well as example keys for BIO, SCA, and QSRx.
+  - requires epel-release
+  - requires sed
+  - requires screen
+  - requires gawk
+  - requires bind-utils
+  - requires net-tools
+  - requires bind-libs
+  - requires file
+  - requires sudo
+  - requires telnet
+  - requires wget
+  - requires bgpdump
+  - requires libbgpdump
+  - optional gnome-terminal
+  - optional python3
 
 -------------------------------------------------------------------------------
-Packaged by BGP-SRx Software Suite Bundler V9.0.1
+Packaged by BGP-SRx Software Suite Bundler V9.3.1

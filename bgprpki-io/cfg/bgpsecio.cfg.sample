@@ -157,6 +157,6 @@ session = (
 );
 
 # global updates for all sessions
-# <prefix>[,[[B4]? <asn>[p<repetition>]]*[ ]*[I|V|N]?]
+# <prefix>[ ]*[,(B4 )?(<asn>[(p|P)?<pCount>] )*(I|V|N)?]
 update = ( 
          );

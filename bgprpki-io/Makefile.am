@@ -1,5 +1,4 @@
 ACLOCAL_AMFLAGS = -I m4
-AUTOMAKE_OPTIONS = foreign
 
 .PHONY: distclean-local rpms srcrpm
 
@@ -9,8 +8,8 @@ EXTRA_DIST = $(PACKAGE_TARNAME).spec.in
 
 distclean-local:
 	rm -f *.spec;            \
-	rm -f bgpsecio-*.rpm;    \
-	rm -f bgpsecio-*.tar.gz; \
+	rm -f bgprpki-*.rpm;    \
+	rm -f bgprpki-*.tar.gz; \
 	rm -rf autom4te.cache;
 
 if LIB_VER_INFO_COND
@@ -76,37 +75,36 @@ libbrio_bgp_la_LDFLAGS = $(LDFLAGS) $(SCA_LDFLAGS) $(OPENSSL_LDFLAGS)
 ################################################################################
 
 briodir=$(bindir)
-brio_PROGRAMS = brio brio_cache 
+brio_PROGRAMS = brio_tg brio_rc 
 
 AM_FLAGS = -DPRG_VERSION=@MAJOR_VER@.@MINOR_VER@
 
 ##=======================
-## BRIO CACHE
+## BRIO-RC
 ##=======================
 
-brio_cache_SOURCES = \
+brio_rc_SOURCES = \
           srx-common/server_socket.c      \
           rpki-rtr-protocol/rpkirtr_svr.c
 
-brio_cache_LDADD = \
+brio_rc_LDADD = \
           libantd_util.la \
           libbrio_bgp.la  \
           libsrx_common.la
 
-brio_cache_CFLAGS  = $(SCA_CFLAGS) $(OS_CFLAGS) -DBRIO
+brio_rc_CFLAGS  = $(SCA_CFLAGS) $(OS_CFLAGS) -DBRIO
 
-brio_cache_LDFLAGS = $(LDFLAGS) \
+brio_rc_LDFLAGS = $(LDFLAGS) \
           -ldl           \
-          -lm            \
           -lrt           \
           -lconfig       \
           $(LIBS)
 
 ##=======================
-## BRIO
+## BRIO-TG
 ##=======================
 
-brio_SOURCES = \
+brio_tg_SOURCES = \
           ASList.c            \
           ASNTokenizer.c      \
           updateStackUtil.c   \
@@ -115,13 +113,12 @@ brio_SOURCES = \
           player/player.c     \
           bgpsecio.c
 
-brio_LDADD = libantd_util.la libbrio_bgp.la
+brio_tg_LDADD = libantd_util.la libbrio_bgp.la
 
-brio_CFLAGS = $(SCA_CFLAGS) $(OPENSSL_CFLAGS) $(OS_CFLAGS)  -DBRIO
+brio_tg_CFLAGS = $(SCA_CFLAGS) $(OPENSSL_CFLAGS) $(OS_CFLAGS)  -DBRIO
 
-brio_LDFLAGS = $(LDFLAGS) $(SCA_LDFLAGS) $(OPENSSL_LDFLAGS) \
+brio_tg_LDFLAGS = $(LDFLAGS) $(SCA_LDFLAGS) $(OPENSSL_LDFLAGS) \
           -ldl           \
-          -lm            \
           -lrt           \
           -lconfig       \
           @OPENSSL_LIBS@ \
@@ -199,3 +196,8 @@ rpms: dist rpmcheck $(rpmspec)
 
 dist-hook:
 	rm -rf `find $(distdir) -name .svn`
+
+# Allows README.md in lieu of README. Another option is to declare the project
+# as foreign in AUTOMAKE_OPTIONS in configure.ac or create a symbolic link 
+# from README to README.md
+README: README.md

@@ -1,0 +1,23 @@
+#
+# The RPKI Cache Test Harness does not really have any configurations
+# The port is handed over during the start of the cache
+#
+# This script file contains only the data needed for this example. This includes
+# the ROA for the prefix announcment and the ASPA's registered for the AS's 
+# along the path.
+#
+echo "This is the BGP-RPKI-IO Cache Test Harness (brio_rc) for example 14"
+
+echo "Add ROA configurations"
+add 10.65.0.0/22 24 65000
+
+echo "Add ASPA configurations"
+addASPA 65000 65020 65030
+addASPA 65010 65040
+addASPA 65020 65050
+addASPA 65030 65050 65060
+addASPA 65060 0
+
+
+echo "Cache Contents:"
+cache

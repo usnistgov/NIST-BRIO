@@ -20,10 +20,14 @@
  * other licenses. Please refer to the licenses of all libraries required
  * by this software.
  *
- * @version 0.2.1.12
+ * @version b0.7.0.1
  * 
  * ChangeLog:
  * -----------------------------------------------------------------------------
+ *  b0.7.0.1- 2025/03/28 - oborchert
+ *            * Removed un-used struct bgpsec_openssl_prefix.
+ *          - 2025/03/20 - oborchert
+ *            * Added processing of parameter --show-setting
  *  0.2.1.12- 2024/06/11 - oborchert
  *            * Fixed speller in message when using parameter -C <file>
  *  0.2.1.11- 2021/10/26 - oborchert
@@ -644,27 +648,6 @@ static int _runBGPRouterSession(PrgParams* params, int sessionNr)
   return EXIT_SUCCESS;
 }
 
-// This struct is currently a dirty hack until a struct is provided by 
-// srxcryptoapi
-typedef struct {
-  u_char family;
-  u_char prefixlen;
-  union
-  {
-    u_char prefix;
-    struct in_addr prefix4;
-#ifdef HAVE_IPV6
-    struct in6_addr prefix6;
-#endif /* HAVE_IPV6 */
-    struct
-    {
-      struct in_addr id;
-      struct in_addr adv_router;
-    } lp;
-    u_char val[8];
-  } u __attribute__ ((aligned (8)));
-} bgpsec_openssl_prefix;
-
 ////////////////////////////////////////////////////////////////////////////////
 //  CAPI Processing
 ////////////////////////////////////////////////////////////////////////////////
@@ -1242,7 +1225,8 @@ static int _runGEN(PrgParams* params, u_int8_t type)
 }
 
 /**
- * Do a preliminary sanity check of the provided settings.
+ * Do a preliminary sanity check of the provided settings. In case of disabled
+ * BGPsec, all BGPsec related capabilities will be disabled as well.
  * 
  * @param params the program parameters
  * @param exitVal pointer to the return value
@@ -1252,8 +1236,33 @@ static int _runGEN(PrgParams* params, u_int8_t type)
 static bool _checkSettings(PrgParams* params, int* exitVal)
 {
   bool keepGoing = true;
+  BGP_SessionConf* session = NULL;
   
-  if (params->createCfgFile)
+  if (params->disableBGPsec)
+  {
+    if (params->type != OPM_BGP)
+    {
+      _errorParam("Mode 'BGP' must be used when BGPsec is disabled!");
+      keepGoing = false;
+    }
+    else
+    {
+      // Disable BGPsec Capabilities
+      for (int sessIdx = 0; sessIdx < params->sessionCount; sessIdx++)
+      {
+        session = params->sessionConf[sessIdx];
+        if (session != NULL)
+        {
+          session->capConf.bgpsec_rcv_v4 = false;
+          session->capConf.bgpsec_rcv_v6 = false;
+          session->capConf.bgpsec_snd_v4 = false;
+          session->capConf.bgpsec_snd_v6 = false;
+        }
+      }
+    }
+  }
+  
+  if (keepGoing && params->createCfgFile)
   { 
     // Only the first session configuration is used.    
     BGP_SessionConf* bgpConf = params->sessionConf[0];
@@ -1285,7 +1294,7 @@ static bool _checkSettings(PrgParams* params, int* exitVal)
     }
     keepGoing = false;
   } 
-  else
+  else if (keepGoing)
   {
     switch (params->type)
     {
@@ -1312,7 +1321,7 @@ static bool _checkSettings(PrgParams* params, int* exitVal)
         break;
     }    
   }
-  
+
   return keepGoing;
 }
 
@@ -1346,7 +1355,8 @@ int main(int argc, char** argv)
       printDone = false;
       break;
     default:
-      // All went well, Check for Input settings
+      // All went well, Check for Input settings only if application will be 
+      // started. 
       keepGoing = _checkSettings(&params, &retVal);
       break;
   }
@@ -1355,15 +1365,24 @@ int main(int argc, char** argv)
   {
     postProcessUpdateStack(&params);
     
-    printf ("Starting %s...\n\n", PACKAGE_STRING);
-    // Print message on standard error so it is visible on the screen.
-    if (!params.suppressWarning)
+    if (!params.showSettings)
     {
-      fprintf (stderr, "%s", STARTUP_MSG);
+      printf ("Starting %s...\n\n", PACKAGE_STRING);
+      // Print message on standard error so it is visible on the screen.
+      if (!params.suppressWarning)
+      {
+        fprintf (stderr, "%s", STARTUP_MSG);
+      }
+      else
+      {
+        fprintf (stderr, "%s", STARTUP_MSG_SUPPRESSED);
+      }
     }
     else
     {
-      fprintf (stderr, "%s", STARTUP_MSG_SUPPRESSED);
+      printf ("\n%s\n\n", PACKAGE_STRING);
+      printf ("Show configured program settings:\n");
+      printf ("=================================\n\n");
     }
     
     BGP_SessionConf* bgpConf = NULL;
@@ -1390,9 +1409,22 @@ int main(int argc, char** argv)
     
     // Set session configuration to first session.
     bgpConf = params.sessionConf[0];
+
+    OP_Mode configuredMode = params.type;
+    if (params.showSettings)
+    {
+      // Use the type to trigger the print only. This is done to allow
+      // the cleanup later on without extra complex coding.
+      params.type = OPM_NONE;
+    }
     
     switch (params.type)
     {
+      case OPM_NONE:
+        // Restore the original mode.
+        params.type = configuredMode;
+        printSettings(&params);
+        break;
       case OPM_BGP:
         // @TODO: Maybe create loop for more than one sessions.
         for (sessIdx = 0; sessIdx < params.sessionCount; sessIdx++)
@@ -1409,11 +1441,15 @@ int main(int argc, char** argv)
           bgpConf = params.sessionConf[sessIdx];
           if (!isUpdateStackEmpty(&params, sessIdx, inclSTDIO))
           {
-            // Traffic will be generated here = keys are needed.
-            // pre-load all PRIVATE keys.
-            asList = preloadKeys(asList, params.skiFName, params.keyLocation, 
-                                 params.preloadECKEY, 
-                                 bgpConf->algoParam.algoID, k_private);
+            if (!params.disableBGPsec)
+            {
+              printf ("BGPSec NOT DISABLED!\n");
+              // Traffic will be generated here = keys are needed.
+              // pre-load all PRIVATE keys.
+              asList = preloadKeys(asList, params.skiFName, params.keyLocation, 
+                                  params.preloadECKEY, 
+                                  bgpConf->algoParam.algoID, k_private);
+            }
             #ifdef DEBUG
               printList(asList);
             #endif

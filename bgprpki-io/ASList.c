@@ -316,7 +316,7 @@ TASList* loadAS_SKI(const char* fName, TASList* asList, u_int8_t algoID,
 }
 
 /**
- * Print the given ASInfo instance. THe asn will be printed in human readable
+ * Print the given ASInfo instance. The asn will be printed in human readable
  * host format.
  *  
  * @param c1 The initial character (+) if needed

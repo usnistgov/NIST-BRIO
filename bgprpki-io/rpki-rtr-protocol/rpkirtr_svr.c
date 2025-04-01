@@ -28,10 +28,12 @@
  * - Removed, i.e. withdrawn routes are kept for one hour
  *   (see CACHE_EXPIRATION_INTERVAL)
  *
- * @version 0.6.2.2
+ * @version 0.7.0.0
  *
  * Changelog:
  * -----------------------------------------------------------------------------
+ * 0.7.0.0  - 2025/01/27 - oborchert
+ *            * Fixed test spellers and synchronized Versioning.
  * 0.6.2.2  - 2024/09/29 - oborchert
  *            * Moved code over to brio and introcduced BRIO tag
  *            * Fixed bug in processEntryRemoval.
@@ -3512,7 +3514,7 @@ static void syntax(const char* prgName)
   printf ("  For backward compatibility, a script also can be added after a\n");
   printf ("  port is specified.! - For future usage, use -f <script> to \n");
   printf ("  specify a script!\n");
-  printf ("  If No port is specified the default port %u is used.\n",
+  printf ("  If no port is specified the default port %u is used.\n",
           DEF_RPKI_PORT);
   printf ("\n");
   showVersion();

@@ -1,5 +1,7 @@
 More details on changes are scripted in the files itself.
 ===========================================================
+Version 0.3.0.7 - February 2025
+  _ Fixed error message in m4 script
 Version 0.3.0.6 - July 2024
   - Fixed bug in deleting keys from key_storage
 Version 0.3.0.5 - July 2024

@@ -22,10 +22,12 @@
  *
  * Provides functionality to print a BGP Open message
  * 
- * @version 0.2.0.10
+ * @version b0.7.0.1
  * 
  * Changelog:
  * -----------------------------------------------------------------------------
+ *  b0.7.0.1- 2025/03/28 - oborchert
+ *            * Fixed typo in printing of capabilities. 
  *  0.2.0.10- 2017/09/01 - oborchert
  *            * Removed not used variables.
  *            * Fixed mismatch in formating and variables within printout.
@@ -142,7 +144,7 @@ static void ___printCAP_T_BGPSEC(BGP_Cap_BGPSEC* bgpsec, const char* tabs)
  */
 static void ___printCAP_T_AS4(BGP_Cap_AS4* as4, const char* tabs)
 {
-  printf ("Supprt for 4-octed AS number capability\n");
+  printf ("Support for 4-octed AS number capability\n");
   printf ("%s+--Type: Supprt for 4-octed AS number capability (%u)\n", tabs, 
           as4->capHdr.cap_code);
   printf ("%s+--Length: %u\n", tabs, as4->capHdr.cap_length);
