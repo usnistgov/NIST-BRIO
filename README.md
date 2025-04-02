@@ -121,13 +121,25 @@ If the above steps are unsuccessful, then drop us an email. (see below)
 Please read [How To Contribute](CONTRIBUTING.md) for details on how to contribute to the project.
 
 ## Authors & Main Contributors
-Oliver Borchert (Lead)  
-Kotikalapudi Sriram  
-Kyehwan Lee  
-Doug Montgomery  
+- Oliver Borchert (Lead)  
+- Kotikalapudi Sriram  
+- Kyehwan Lee  
+- Doug Montgomery  
 
 ## Copyright
 For license information see the [LICENSE](LICENSE) file.
 
 ## Contacts
 For information, questions, or comments, contact us by sending an email to itrg-contact@list.nist.gov
+
+---
+
+<p align="center">
+  <a href="https://www.nist.gov" target="_blank">
+    <picture>
+      <source media="(prefers-color-scheme: light)" srcset="./NIST_Light.png">
+      <source media="(prefers-color-scheme: dark)" srcset="./NIST_Dark.png">
+      <img alt="National Institute of Standards and Technology" width="85%">
+    </picture>
+  </a>
+</p>
