@@ -10,7 +10,7 @@ LOCAL_FLDR=""
 #
 # The install folder name will be saved in LOCAL_FLDR
 #
-# @retunr 0 if a folder was found, otherwise 1
+# @return 0 if a folder was found, otherwise 1
 #
 function find_local()
 {
