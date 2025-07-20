@@ -23,7 +23,7 @@ SYS_MISSING_IPS=0
 READ_TAB=""
 GLOBAL_YN=""
 
-FUNCTION_LIB_VER=0.5.1.9
+FUNCTION_LIB_VER=b0.7.1.2
 
 ## 
 ## This function resets the arrays associated with IP selection
@@ -58,7 +58,12 @@ function reset_SYS_IP()
  #   list_type=2 - don't remove and allow re-selection
  #     1(a), 2(b), 3(c), 4(d) and 2 selected: new list = 1(a), 2(b), 3(c), 4(d)
  # 
-## $1 number of IP addresses to be assigned.
+ # Select All: (Good for creating a list)
+ #   $1      = 0
+ #   $2      = (Optional)
+ #   $3 & $4 = Ignored
+ #
+## $1 number of IP addresses to be assigned. (-1: select all)
 ## $2 text label prefix (default: 'ip-address-')
 ## $3 list-type (0|1|2)
 ## $4... pre-selection
@@ -68,6 +73,9 @@ function fill_SYS_IP()
   local ip_addr=($(ifconfig | grep -e "inet \(addr:\)\?" | sed -e "s/.*inet [adr:]*\([0-9\.]\+\) .*/\1/g" | sed "/127\.0\.0\.1/d"))
   if [ $? -gt 0 ] ; then
     local ip_addr=($(ip addr show | grep -e "inet \(addr:\)\?" | sed -e "s/.*inet [adr:]*\([0-9\.]\+\)\/[0-9]\+ .*/\1/g" | sed "/127\.0\.0\.1/d"))
+    if [ $? - gt 0 ] ; then
+      echo "WARNING: neither 'ifconfig' not 'ip addr' could provide any IP Addresses!"
+    fi
   fi
   local arrayHelper
   local _PRESELECT=()
@@ -98,8 +106,7 @@ function fill_SYS_IP()
 
   #echo "arr: ${ip_addr[@]}"
   #echo "req: $requested"
-
-  if [ ${#ip_addr[@]} -gt $requested ] ; then
+  if [ ${#ip_addr[@]} -gt $requested ] && [ $requested -ne 0 ] ; then
     _preselect_idx=1
     while [ ${#SYS_IP[@]} -lt $requested ] ; do
       if [ $requested -gt 1 ] ; then
@@ -399,6 +406,29 @@ function countInParameters()
   done
 
   return $_count
+}
+
+##
+## determines if the search value is in the given parameters.
+##
+## $1 The value to search for
+ #
+## $2..$n the parameters to look in
+##
+## Return How often the given value was found
+##
+function isInArray()
+{
+  local _found
+  
+  countInParameters $@
+  _found=$?
+
+  if [ $_found -gt 0 ] ; then
+    _found=1
+  fi
+
+  return $_found
 }
 
 #####################################################################

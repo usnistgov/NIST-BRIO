@@ -1,3 +1,26 @@
+Version b0.7.1.2
+  * Added more functionality to lib/functions.sh script
+  * Abord installation when too many configured IP check fail.
+  * Fixed errors in start_example.sh
+  * Added hidden parameter --SKIP_ROUTER to start_example.sh to overwrite
+    the configuration
+  * Added netcat to router.sh to simulate a process listening on port 179
+Version b0.7.1.1
+  * Fixed start_expX.sh scripts ans start_example.sh script to propely locate
+    the srxcryptoapi.conf
+  * Added configuration for router script location and name
+  * Added -d for dryrun tests of examples
+Version b0.7.1.0
+  * Changes all starter scripts to allign with the scope of the experiment 
+    starter. 
+  * Modified the starter script to only include brio_tg and brio_tc and for
+    the router it uses a template router.sh shell script.
+Version b0.7.0.3
+  * Fixed error in configuration script to show all available IP/s with '-i'
+Version b0.7.0.2
+  * Added .gitignore to prevent autogeneraqted configuration files from being 
+    checked in.
+  * Added prepare.sh script containing some usefull alias'es
 Version b0.7.0.1
   * Added ASPA examples
   * Modified example configuration, installation, and start framework.

@@ -1,5 +1,4 @@
 #!/bin/bash
-# 
 # Make sure we start in the demo folder
 #
 #
@@ -8,186 +7,249 @@
 # BRIO1_PARAMS=[Additional command line parameter]* 
 # BRIO2_PARAMS=[Additional command line parameter]*
 #
-if [ "$_BGP_SRX_CALLER" == "" ] ; then
+if [ "$_BRIO_CALLER" == "" ] ; then
   echo "This starter script cannot be called directly!"
   exit 1
 fi
 
 PACKAGE_NAME="NIST-BRIO"
-VERSION="b0.7.0.1-0005"
+VERSION="b0.7.1.2-0008"
+DEBUG=0
 
 if [ "$1" == "version" ] || [ "$1" == "-v" ] ; then
   echo "Version $VERSION"
   exit 
 fi
 
-echo "Start $_BGP_SRX_CALLER..."
+echo "Start $_BRIO_CALLER $@..."
 
-DEMO_FLDR=$(readlink -f $0 | xargs dirname)
+# DEMO_CURR_FLDR is used to come back to when script exits
 DEMO_CURR_FLDR=$(pwd)
+DEMO_FLDR=$(readlink -f $0 | xargs dirname)
 DEMO_PREFIX_FLDR=$(echo $DEMO_FLDR | sed -e "s/\(.*\)\/opt\/.*/\1/g")
-DEMO_BIN_FLDR=$DEMO_PREFIX_FLDR/bin/
-DEMO_SBIN_FLDR=$DEMO_PREFIX_FLDR/sbin/
-DEMO_LIB_FLDR=$DEMO_PREFIX_FLDR/opt/brio-examples/lib
+DEMO_BIN_FLDR=$DEMO_PREFIX_FLDR/bin
+DEMO_ETC_FLDR=$DEMO_PREFIX_FLDR/etc
+DEMO_EXAMPLES_FLDR=$DEMO_PREFIX_FLDR/opt/brio-examples
+DEMO_EX_SCRIPT_FLDR=$DEMO_EXAMPLES_FLDR/bin
+DEMO_EX_LIB_FLDR=$DEMO_EXAMPLES_FLDR/lib
 
-##############################################################################
-##  Enable/Disable functionality
-##
-if [ "$ENABLE_CACHE" == "" ]  ; then ENABLE_CACHE=1  ; fi
-if [ "$ENABLE_SCA" == "" ]    ; then ENABLE_SCA=1    ; fi
-if [ "$ENABLE_SRX" == "" ]    ; then ENABLE_SRX=1    ; fi
-if [ "$ENABLE_ROUTER" == "" ] ; then ENABLE_ROUTER=1 ; fi
-if [ "$ENABLE_BRIO1" == "" ]  ; then ENABLE_BRIO1=1  ; fi
-if [ "$ENABLE_BRIO2" == "" ]  ; then ENABLE_BRIO2=1  ; fi
-
-##############################################################################
+# Indicator if anything did run!
+ANYTHING_SELECTED=0
 
 ##############################################################################
 ##  LOAD THE LIBRARY
 ##
-if [ ! -e $DEMO_LIB_FLDR/functions.sh ] ; then
-  echo "WARNING: Could not find library script [$DEMO_LIB_FLDR/functions.sh]!"
+if [ ! -e $DEMO_EX_LIB_FLDR/functions.sh ] ; then
+  echo "WARNING: Could not find library script [$DEMO_EX_LIB_FLDR/functions.sh]!"
   echo "         Install framework properly prior usage."
 else
-  . $DEMO_LIB_FLDR/functions.sh
+  . $DEMO_EX_LIB_FLDR/functions.sh
 fi
 if [ "$FUNCTION_LIB_VER" == "" ] ; then
   echo "ERROR loading the functions library - Abort operation!"
   exit 1
 fi
+
 ##############################################################################
+##
+##  Check for command line skips:
+##
 
-# the program names might be changed in the configuration files/
-PRG_BRIO=brio_tg
-BRIO_NAME="BGPRPKI-IO"
-PRG_CACHE=brio_rc
-CACHE_NAME="RPKI Router Cache Test Harness"
-PRG_SRX=srx_server
-SRX_NAME="SRx Server"
-PRG_ROUTER=router.sh
-ROUTER_NAME="Router Under Test"
+# Used in syntax to determine if router was skipped or not configured. It will
+# only be set to '1' if ENABLE_ROUTER was original set to '1'
+SKIP_ROUTER=0
 
-# Load configuration files
-CFG_FILES=( cache.cfg router.cfg srx.cfg sca.cfg )
-for cfgFile in ${CFG_FILES[@]} ; do
-  if [ -e $cfgFile ] ; then
-    echo -n "Load configuration $cfgFile..."
-    source $cfgFile > /dev/null 2>&1
-    if [ $? -eq 0 ] ; then      
-      echo "done."
-    else
-      echo "error."
-      exit 1
+_ALL_PARAMS=( )
+while [ "$1" != "" ] ; do
+  case "$1" in 
+    "--SKIP-ROUTER")
+      if [ "$ENABLE_ROUTER" == "1" ] ; then
+        echo "Detected disable router command!"
+        echo
+        echo "#################################################################"
+        echo "IMPORTANT: The router must be up and running to perform the test!"
+        echo "#################################################################"
+        echo
+        SKIP_ROUTER=1
+        ENABLE_ROUTER=0
+      fi
+      ;;
+    *) 
+      _ALL_PARAMS+=( $1 )
+      ;;
+  esac
+  shift
+done
+
+# Going forward we use _ALL_PARAMS in lieu of $@ - _ALL_PARAMS will be replaced
+# with _PARAMS at a later point.
+
+##############################################################################
+##
+##  Check passed configuration and set default values if not set.
+##
+##
+##  If not enabled, disable by default
+
+if [ "$EXPERIMENT_NAME" == "" ] ; then 
+  echo "The name of the experiment is needed for the router to find its"
+  echo "proper router configuration!"
+  exit 1
+fi
+
+if [ "$ENABLE_ROUTER"  == "" ] ; then ENABLE_ROUTER=0  ; fi
+if [ "$ENABLE_BRIO2"   == "" ] ; then ENABLE_BRIO2=0   ; fi
+
+## Set Router Information
+if [ $ENABLE_ROUTER -eq 1 ] ; then
+  if [ "$ROUTER_PRG"  == "" ] ; then ROUTER_PRG=router.sh             ; fi
+  if [ "$ROUTER_FLDR" == "" ] ; then ROUTER_FLDR=$DEMO_EX_SCRIPT_FLDR ; fi
+else
+  echo "INFO: Router is disabled!"
+fi
+
+## Set Default Ports
+if [ "$PORT_CACHE"     == "" ] ; then PORT_CACHE=50000 ; fi
+if [ "$PORT_ROUTER"    == "" ] ; then PORT_ROUTER=179  ; fi
+
+## Set default configurations
+if [ "$CFG_SCA_NAME"   == "" ] ; then CFG_SCA_NAME="srxcryptoapi.conf" ; fi
+if [ "$CFG_CACHE_NAME" == "" ] ; then CFG_CACHE_NAME="cache.script"    ; fi
+if [ "$CFG_BRIO1_NAME" == "" ] ; then CFG_BRIO1_NAME="brio1.conf"      ; fi
+if [ "$CFG_BRIO2_NAME" == "" ] ; then CFG_BRIO2_NAME="brio2.conf"      ; fi
+
+## Set default runtime parameters
+# Perform the stop all until $STOP_ALL_LOOP -eq 0. This allows to tweak the 
+# stopping of all modiles, recommended is 3
+if [ "$STOP_ALL_LOOP"     == "" ] ; then STOP_ALL_LOOP=3      ; fi
+
+if [ "$LISTEN_TIMEOUT"    == "" ] ; then LISTEN_TIMEOUT=10    ; fi
+if [ "$SIT_AND_WAIT_TIME" == "" ] ; then SIT_AND_WAIT_TIME=10  ; fi
+if [ "$SUDO_MODULES"      == "" ] ; then SUDO_MODULES=( )     ; fi
+if [ "$SIT_AND_WAIT_MOD"  == "" ] ; then SIT_AND_WAIT_MOD=( ) ; fi
+
+##############################################################################
+##
+## Auto configuration
+##
+if [ $ENABLE_ROUTER -eq 1 ] ; then
+  countInParameters "router" ${SUDO_MODULES[@]}
+  if [ $? -eq 0 ] ; then
+    SUDO_MODULES+=("router")
+  fi
+  countInParameters "router" ${SIT_AND_WAIT_MOD[@]}
+  if [ $? -eq 0 ] ; then
+    SIT_AND_WAIT_MOD+=("router")
+  fi
+fi
+
+##############################################################################
+##
+## Set non configurable default variables
+##
+
+# Check if the port is in priviledged range and add to SUDO_MODULES if needed.
+# $1 Module name
+# $2 Port number
+function checkSUDO()
+{
+  local module=$1
+  local port=$2
+
+  if [ "$module" != "" ] && [ "$port" != "" ] ; then
+    if [ $port -gt 0 ] && [ $port -lt 1025 ] ; then
+      isInArray $module ${SUDO_MODULES[@]}
+      if [ $? -eq 0 ] ; then
+        echo "Module: $module uses port $port -> move to sudo"
+        SUDO_MODULES+=( $module )
+      fi
     fi
   fi
-done
+}
+
+PRG_BRIO=brio_tg
+BRIO_NAME="BRIO - Traffic Generator"
+PRG_CACHE=brio_rc
+CACHE_NAME="BRIO - RPKI Router Cache Test Harness"
+ROUTER_NAME="Router Under Test"
+
+# Enabled by default
+ENABLE_CACHE=1
+ENBALE_BRIO1=1
+
+# Will be set with -d
+DRYRUN=""
 
 # Will be set to "" if --global-binary us used.
 PRG_SFX="./"
 
+# List of tools required for the "all" mode
+REQ_TOOLS=("/bin/bash" "screen" "netstat" "awk")
+
 # Indicates if gnome-terminal is available & should be used in lieu of screen
 TOOL_TERMINAL=0
 USE_TERMINAL=0
-which gnome-terminal > /dev/null
+which gnome-terminal &> /dev/null
 if [  $? -eq 0 ] ; then
   TOOL_TERMINAL=1
 fi
 
-# Perform the stop all until $STOP_ALL_LOOP -eq 0
-# This allows to tweak the stopping of all. 
-# Recommended is 3
-if [ "$STOP_ALL_LOOP" == "" ] ; then
-  STOP_ALL_LOOP=3
-fi
-
-if [ "$SUDO_MODULES" == "" ] ; then
-  SUDO_MODULES=()
-fi
-countInParameters "router" ${SUDO_MODULES[@]}
-if [ $? -eq 0 ] ; then
-  SUDO_MODULES+=("router")
-fi
-
-if [ "$SIT_AND_WAIT_TIME" == "" ] ; then
-  SIT_AND_WAIT_TIME=10
-fi
-if [ "$SIT_AND_WAIT_MOD" == "" ] ; then
-  SIT_AND_WAIT_MOD=()
-fi
-
-# This allows to exclude brio2 by setting SKIP_BRIO2=1
-if [ "$SKIP_BRIO2" == "" ] ; then
-  SKIP_BRIO2=0
-fi
-
 # Contains the parameters that can be globally used for each module
-GLOB_PARAMS=( "-t" "--wait-for-enter" "--global-binary")
+GLOB_PARAMS=( "-t" "--wait-for-enter" "--global-binary" )
 
 # These arrays are used for the automated starting and stopping.
 # modules are started and stopped in this order
-ALL_MOD_NAME=( "cache" "srx" "router" "brio1" )
-if [ $SKIP_BRIO2 -eq 0 ] ; then
-  ALL_MOD_NAME+=( "brio2" )
+ALL_MOD_NAME=( )     # Contains the module name
+ALL_MOD_PORT=( )     # Contains the port, this module uses - 0 no port
+ALL_MOD_PORT_REQ=( ) # Contains the port this module wants to connect to 
+if [ $ENABLE_CACHE  -eq 1 ] ; then 
+  ALL_MOD_NAME+=( "cache" ); 
+  ALL_MOD_PORT+=( $PORT_CACHE ); 
+  ALL_MOD_PORT_REQ=( 0 )
+  checkSUDO "cache" $PORT_CACHE
 fi
-
-if [ "$PORT_CACHE" == "" ] ; then
-  PORT_CACHE=50000
+if [ $ENABLE_ROUTER -eq 1 ] ; then 
+  ALL_MOD_NAME+=( "router" )
+  ALL_MOD_PORT+=( $PORT_ROUTER )
+  ALL_MOD_PORT_REQ+=( $PORT_CACHE ) # Wants the cache to be online
+  checkSUDO "cache" $PORT_ROUTER
 fi
-if [ "$PORT_SRX" == "" ] ; then
-  PORT_SRX=17900
-fi
-if [ "$PORT_ROUTER" == "" ] ; then
-  PORT_ROUTER=179
-fi
-# These are the ports configured for each module in case the screen
-# The module order is: cache srx router brio1 brio2
-# did not show (happens sometimes) try to kill the app using the port
-# port=0 skip
-ALL_MOD_PORT=( $PORT_CACHE    $PORT_SRX  $PORT_ROUTER       0)
-# These ports are required by the specific module
-ALL_MOD_PORT_REQ=( 0         $PORT_CACHE   $PORT_SRX   $PORT_ROUTER)
-
-if [ $SKIP_BRIO2 -eq 0 ] ; then
+if [ $ENBALE_BRIO1  -eq 1 ] ; then 
+  ALL_MOD_NAME+=( "brio1"  ) 
   ALL_MOD_PORT+=( 0 )
-  ALL_MOD_PORT_REQ+=( $PORT_ROUTER )
+  if [ $ENABLE_ROUTER -eq 1 ] ; then
+    ALL_MOD_PORT_REQ+=( $PORT_ROUTER ) # Wants the router to be reachable
+  else
+    ALL_MOD_PORT_REQ+=( 0 ) # The router might be running elsewhere
+  fi
+fi 
+if [ $ENABLE_BRIO2  -eq 1 ] ; then 
+  ALL_MOD_NAME+=( "brio2"  )
+  ALL_MOD_PORT+=( 0 )
+  if [ $ENABLE_ROUTER -eq 1 ] ; then
+    ALL_MOD_PORT_REQ+=( $PORT_ROUTER ) # Wants the router to be reachable
+  else
+    ALL_MOD_PORT_REQ+=( 0 ) # The router might be running elsewhere
+  fi
 fi
 
-if [ "$LISTEN_TIMEOUT" == "" ] ; then
-  LISTEN_TIMEOUT=10
+if [ $DEBUG -eq 1 ] ; then
+  echo "Service:_ ${ALL_MOD_NAME[@]}" | sed -e "s/ /\t/g" | sed -e "s/_/ /g"
+  echo "Own_Port: ${ALL_MOD_PORT[@]}" | sed -e "s/ /\t/g" | sed -e "s/_/ /g"
+  echo "Wait_For: ${ALL_MOD_PORT_REQ[@]}" | sed -e "s/ /\t/g" | sed -e "s/_/ /g"
 fi
 
-# Configuration files to be used
-if [ "$CFG_CACHE_NAME" == "" ] ; then
-  CFG_CACHE_NAME="brio_rc.script"
-fi  
-if [ "$CFG_SCA_NAME" == "" ] ; then
-  CFG_SCA_NAME="srxcryptoapi.conf"
-fi  
-if [ "$CFG_SRX_NAME" == "" ] ; then
-  CFG_SRX_NAME="srx_server.conf"
-fi  
-if [ "$CFG_ROUTER_NAME" == "" ] ; then
-  CFG_ROUTER_NAME="as65000.bgpd.conf"
-fi  
-if [ "$CFG_BRIO1_NAME" == "" ] ; then
-  CFG_BRIO1_NAME="as65005.brio.conf"
-fi  
-if [ "$CFG_BRIO2_NAME" == "" ] ; then
-  CFG_BRIO2_NAME="as65010.brio.conf"
-fi
-CFG_CACHE=$DEMO_FLDR/$CFG_CACHE_NAME;
-CFG_SCA=$DEMO_FLDR/$CFG_SCA_NAME
-CFG_SRX=$DEMO_FLDR/$CFG_SRX_NAME
-CFG_ROUTER=$DEMO_FLDR/$CFG_ROUTER_NAME
+CFG_CACHE=$DEMO_FLDR/$CFG_CACHE_NAME
+CFG_SCA=$DEMO_ETC_FLDR/$CFG_SCA_NAME
 CFG_BRIO1=$DEMO_FLDR/$CFG_BRIO1_NAME
 CFG_BRIO2=$DEMO_FLDR/$CFG_BRIO2_NAME
 
 #
 # Display the programs syntax
 #
-syntax()
+function syntax()
 {
-  echo "$0 <module> [-t] [--wait-for-enter] [--gloal-binary] | <command>"
+  echo "$0 <module> [-t] [--wait-for-enter] [--gloal-binary] [-d] | <command> [-d]"
   echo
   echo " --wait-for-enter Wait for the enter key to be pressed"
   echo "                  before the program ends." 
@@ -196,6 +258,10 @@ syntax()
   echo "                  when using <all> or <select>"
   if [ $TOOL_TERMINAL -eq 0 ] ; then
     echo "                  IMPORTANT: gnome-terminal required to work!!"
+  fi
+  echo " -d               Perform a dry run only!"
+  if [ $ENABLE_ROUTER -eq 1 ] ; then
+    echo " --SKIP-ROUTER    Overwrite configuration and disable router!"
   fi
   echo
   echo "Command:"
@@ -212,24 +278,26 @@ syntax()
   echo "           This uses screen and starts all but the router in the"
   echo "           users environment and router as root."
   echo "  select <module> [ <module>]*"
-  echo "           Functions in thesame way as all except it does not use"
+  echo "           Functions in the same way as all except it does not use"
   echo "           all modules in the predefined order, it starts modules"
   echo "           in the order as scripted and only the scripted ones."
   echo 
-  if [ $ENABLE_CACHE -eq 1 ] ; then
-    echo "  cache    Start the $CACHE_NAME"
-  fi
-  if [ $ENABLE_SRX -eq 1 ] ; then
-    echo "  srx      Start the $SRX_NAME"
-  fi
+  echo "  cache    Start the $CACHE_NAME"
   if [ $ENABLE_ROUTER -eq 1 ] ; then
     echo "  router   Start the $ROUTER_NAME (root privileges required!)"
   fi
-  if [ $ENABLE_BRIO1 -eq 1 ] ; then
-    echo "  brio1    Start the $BRIO_NAME traffic generator 1"
-  fi
-  if [ $ENABLE_BRIO2 -eq 1 ] && [ $SKIP_BRIO2 -eq 0 ] ; then
+  echo "  brio1    Start the $BRIO_NAME traffic generator 1"
+  if [ $ENABLE_BRIO2 -eq 1 ] ; then
     echo "  brio2    Start the $BRIO_NAME traffic generator 2"
+  fi
+  if [ $ENABLE_ROUTER -eq 0 ] ; then
+    echo
+    echo "Note: The router is not controlled by this starter script! To enable"
+    if [ $SKIP_ROUTER -eq 0 ] ; then
+      echo "      the router, call this script with ENABLE_ROUTER=1 being set!"
+    else
+      echo "      the router, call this script without --SKIP-ROUTER!"
+    fi
   fi
   echo 
   echo "$PACKAGE_NAME $0 V $VERSION"
@@ -243,7 +311,7 @@ syntax()
 #
 # @param $1 the exit code/
 # 
-endPrg()
+function endPrg()
 {
   cd $DEMO_CURR_FLDR
   echo
@@ -253,6 +321,7 @@ endPrg()
 #
 # Start the program specified in the parameters
 #
+# $1 Indicates if it needs sudp privileges (1=sudo 2=no)
 # $1 The program to be started
 # $2..n The programs parameter.
 #
@@ -260,22 +329,36 @@ endPrg()
 #
 function startPrg()
 {
+  echo "startPrg: $@"
+
   local _retVal=1
   local _sudo=""
   local _sudo_text=""
-  local _program="$1"
-
-  if [ "$(whoami)" == "root" ] ; then
-    _sudo="sudo "
-    _sudo_text=" as 'root'"
-  fi
+  local _program="$2"
+  
+  case "$1" in
+    "0")
+        shift
+        ;;
+    "1") 
+        if [ "$(whoami)" == "root" ] ; then
+          _sudo="sudo "
+          _sudo_text=" as 'root'"
+        fi
+        shift
+        ;;
+    *)
+        echo "Error: Invalid value '$1' for startPrg"
+        return 1
+        ;;
+  esac
   shift
 
   if [ "$_program" != "" ] ; then
     if [ -e $_program ] ; then
       echo "Current Folder: $(pwd)"
       echo "Starting [$_sudo$_program $@]$_sudo_text..."    
-      $_sudo$_program $@
+      $DRYRUN $_sudo$_program $@
       _retVal=$?
 
       if [ ! $_retVal -eq 0 ] ; then 
@@ -326,7 +409,7 @@ function _startModuleIn()
     # Check if this module is already active as a screen
     case "$_thread" in
       "screen")
-         $_sudo_cmd screen -ls | grep "\.$_module " > /dev/null 2>&1
+         $DRYRUN $_sudo_cmd screen -ls | grep "\.$_module " > /dev/null 2>&1
          _retVal=$?
          ;;
       "terminal")
@@ -343,11 +426,11 @@ function _startModuleIn()
       echo "$_tab- Starting module '$_module'..."
       case "$_thread" in
         "screen")
-          $_sudo_cmd screen -S "$_module" -d -m $0 $_module --wait-for-enter
+          $DRYRUN $_sudo_cmd screen -S "$_module" -d -m $0 $_module --wait-for-enter
           _retVal=$?
           ;;
         "terminal")
-          gnome-terminal --title "$_module" --tab $_activate -- /bin/bash -c "$_sudo_cmd $0 $_module --wait-for-enter"
+          $DRYRUN gnome-terminal --title "$_module" --tab $_activate -- /bin/bash -c "$_sudo_cmd $0 $_module --wait-for-enter"
           _retVal=$?
           ;;
         *)
@@ -378,13 +461,11 @@ function runAutomated()
   local _MODULES=$@
   local _useTimeout=$LISTEN_TIMEOUT
   local _waitCounter=$SIT_AND_WAIT_TIME
-#  local _PID=()
-#  local _sudo=""
 
   echo "Perform tool check..."
   for tool in ${REQ_TOOLS[@]} ; do
     echo -n "Check for '$tool'..."
-    which $tool > /dev/null 2>&1
+    which $tool &> /dev/null
     if [ $? -eq 0 ] ; then
       echo "Found!"
     else
@@ -424,7 +505,7 @@ function runAutomated()
     if [ $? -gt 0 ] ; then
       # Just in case, add brio1 and brio2 into the sit and wait
       SIT_AND_WAIT_MOD+=( "brio1" )
-      if [ $SKIP_BRIO2 -eq 0 ] ; then
+      if [ $ENABLE_BRIO2 -eq 0 ] ; then
         SIT_AND_WAIT_MOD+=( "brio2" )
       fi
     fi
@@ -433,12 +514,15 @@ function runAutomated()
       countInParameters ${ALL_MOD_NAME[$_mod_idx]} ${_MODULES[@]}
       if [ $? -gt 0 ] ; then
         if [ $_retVal -eq 0 ] ; then
-          echo "  * Start module ${ALL_MOD_NAME[$_mod_idx]}"
+          echo "  * Start module '${ALL_MOD_NAME[$_mod_idx]}'"
           ## 1st Check if the required port is available to accept connections
-          if [ ${ALL_MOD_PORT_REQ[$(($_mod_idx))]} -gt 0 ] ; then
-            echo -n "    - Wait until port ${ALL_MOD_PORT_REQ[$(($_mod_idx))]} is ready"
-            _waitUntilLISTEN ${ALL_MOD_PORT_REQ[$(($_mod_idx))]} $LISTEN_TIMEOUT
+          if [ ${ALL_MOD_PORT_REQ[$_mod_idx]} -gt 0 ] ; then
+            echo -n "    - Wait until port ${ALL_MOD_PORT_REQ[$_mod_idx]} is ready"
+            _waitUntilLISTEN ${ALL_MOD_PORT_REQ[$_mod_idx]} $LISTEN_TIMEOUT
             _retVal=$?
+            if [ "$DRYRAN" != "" ] ; then
+              _retVal=0
+            fi
             if [ $_retVal -eq 0 ] ; then
               echo "...done!"
             else
@@ -450,6 +534,10 @@ function runAutomated()
           if [ $? -gt 0 ] ; then
             echo -n "    - Delay start by $SIT_AND_WAIT_TIME seconds"
             _waitCounter=$SIT_AND_WAIT_TIME
+            if [ $_waitCounter -eq 0 ] ; then
+              # No dots are printed so add a blank
+              echo -n " "
+            fi
             while [ $_waitCounter -gt 0 ] ; do
               _waitCounter=$(($_waitCounter-1))
               echo -n "."
@@ -470,11 +558,14 @@ function runAutomated()
           fi
           # 4th Verify that the current module is listening on the required port.
           if [ $_retVal -eq 0 ] ; then
-            if [ ${ALL_MOD_PORT[$(($_mod_idx))]} -gt 0 ] ; then
+            if [ ${ALL_MOD_PORT[$_mod_idx]} -gt 0 ] ; then
               echo    "    - Timeout: $_useTimeout sec."
-              echo -n "    - Wait until ${ALL_MOD_NAME[$(($_mod_idx))]} listens on port ${ALL_MOD_PORT[$(($_mod_idx))]}"
-              _waitUntilLISTEN ${ALL_MOD_PORT[$(($_mod_idx))]} $_useTimeout
+              echo -n "    - Wait until ${ALL_MOD_NAME[$_mod_idx]} listens on port ${ALL_MOD_PORT[$_mod_idx]}"
+              _waitUntilLISTEN ${ALL_MOD_PORT[$_mod_idx]} $_useTimeout
               _retVal=$?
+              if [ "$DRYRUN" != "" ] ; then
+                _retVal=0
+              fi
               if [ $_retVal -eq 0 ] ; then
                 echo "...done!"
               else
@@ -482,7 +573,7 @@ function runAutomated()
               fi
             fi
           fi
-          if [ ! $_retVal -eq 0 ] ; then
+          if [ $_retVal -ne 0 ] ; then
             echo "      Module ${ALL_MOD_NAME[$_mod_idx]} did not start properly!"
           fi          
         fi
@@ -503,10 +594,33 @@ function runAutomated()
 #
 function viewAll()
 {
-  echo "Screen for ($(whoami)):"
+  local user=$(whoami)
+  local displayText=0
+
+  echo "Screen for ($user):"
   screen -ls | grep "(Detached)"
-  echo "Screen for (root):"
-  sudo screen -ls | grep "(Detached)"
+  if [ $? -eq 0 ] ; then
+    displayText=1
+  else
+    echo "    Nothing running!"
+  fi
+
+  if [ "$user" != "root" ] ; then
+    echo "Screen for (root):"
+    sudo screen -ls | grep "(Detached)"
+    if [ $? -eq 0 ] ; then
+      displayText=1
+    else
+      echo "    Nothing running!"
+    fi
+  fi
+
+  if [ $USE_TERMINAL -eq 0 ] && [ $displayText -eq 1 ] ; then
+    echo
+    echo "Use 'screen -r -S <screen-name>' to reattach to any screen."
+    echo "Once reattached, press 'Ctrl-a d' to detach again."
+    echo "For more information on how to use screen, use 'man screen'."
+  fi
 }
 
 
@@ -529,7 +643,7 @@ function stopAll()
      _running_mod=${ALL_MOD_NAME[$_mod_idx]}
      _running_port=${ALL_MOD_PORT[$_mod_idx]}
 
-    _program=( $(ps aux | grep -e start.sh | grep -e "$_running_mod" | head -n 1 | awk '{ print $1 " " $2 }' ) )
+    _program=( $(ps aux | grep -E "start_exp[0-9]+.sh" | grep -e "$_running_mod" | head -n 1 | awk '{ print $1 " " $2 }' ) )
     _mod_user="${_program[0]}"
     _mod_pid="${_program[1]}"
     if [ "$_mod_pid" == "" ] ; then
@@ -585,22 +699,19 @@ function stopAll()
 # Switch into the demo folder
 cd $DEMO_FLDR
 
-if [ "$1" == "" ] ; then
-  syntax 0
-fi 
-
-#echo "Current folder...: $DEMO_CURR_FLDR"
-#echo "DEMO Folder......: $DEMO_FLDR" 
-#echo "DEMO_PREFIX_FLDR.: $DEMO_PREFIX_FLDR"
-#echo "DEMO_BIN_FDLR....: $DEMO_BIN_FLDR"
-#echo "DEMO_SBIN_FDLR...: $DEMO_SBIN_FLDR"
+if [ $DEBUG -eq 1 ] ; then
+  echo "Current folder...: $DEMO_CURR_FLDR"
+  echo "DEMO Folder......: $DEMO_FLDR" 
+  echo "DEMO_PREFIX_FLDR.: $DEMO_PREFIX_FLDR"
+  echo "DEMO_BIN_FDLR....: $DEMO_BIN_FLDR"
+  echo "DEMO_SBIN_FDLR...: $DEMO_SBIN_FLDR"
+fi
 
 # Check that all files are configured but also allow "-" to not consider a 
 # configure file.
-TMP_CFG_FILES=( "$CFG_CACHE" "$CFG_SRX" "$CFG_SCA" 
-            "$CFG_ROUTER" "$CFG_BRIO1" )
+TMP_CFG_FILES=( "$CFG_CACHE" "$CFG_SCA" "$CFG_BRIO1" )
 CFG_FILES=( )
-if [ $SKIP_BRIO2 -eq 0 ] ; then
+if [ $ENABLE_BRIO2 -eq 0 ] ; then
   TMP_CFG_FILES+=( "$CFG_BRIO2" )
 fi
 for tmp_cfg_file in ${TMP_CFG_FILES[@]} ; do
@@ -609,9 +720,6 @@ for tmp_cfg_file in ${TMP_CFG_FILES[@]} ; do
     CFG_FILES+=( $tmp_cfg_file )
   fi
 done
-
-# List of tools required for the "all" mode
-REQ_TOOLS=("/bin/bash" "screen" "netstat" "awk")
 
 for cfg_file in "${CFG_FILES[@]}" ; do 
   if [ "$cfg_file" != " " ] && [ ! -e "$cfg_file" ] ; then
@@ -623,9 +731,23 @@ done
 
 retVal=0
 READ_ENTER=0
-_PARAMS=( $(echo $@) )
-for param in ${_PARAMS[@]} ; do
+_PARAMS=( )
+# process all parameters and find configuration settings
+for param in ${_ALL_PARAMS[@]} ; do
   case $param in 
+    "?" | "-?" | "h" | "H" | "-h" | -"H")
+      syntax 0
+      ;;
+    "-d")
+      LISTEN_TIMEOUT=0
+      SIT_AND_WAIT_TIME=0
+      DRYRUN="echo - CALL: "
+      echo
+      echo "###################################################################"
+      echo "## INFO: Enable dry-run!                                         ##"
+      echo "###################################################################"
+      echo
+      ;;
     "--wait-for-enter") 
       READ_ENTER=1 
       ;;
@@ -642,26 +764,39 @@ for param in ${_PARAMS[@]} ; do
       fi
       ;;
     *)
+      # Add as parameter for main process
+      _PARAMS+=( $param )
       ;;
   esac
 done
 
+# Now we use _PARAMS, not $_ALL_PARAMS
+if [ ${#_PARAMS[@]} -eq 0 ] ; then
+  echo "Nothing to do, try '$0 -?' for more information!"
+  exit 1
+fi 
+
 _modules=()
+_paramIdx=0
 if [ $retVal -eq 0 ] ; then
-  case "$1" in
-    "?" | "-?" | "h" | "H" | "-h" | -"H")
-      syntax 0
-      ;;
+  case ${_PARAMS[$_paramIdx]} in
     "view-table")
-      echo "Display the routing table:"
-      echo "=========================="
-      { sleep 1; echo "zebra"; sleep 1; echo "enable"; sleep 1; echo "show ip bgp"; sleep 3; } | telnet localhost 2605
+      ANYTHING_SELECTED=1
+      if [ $ENABLE_ROUTER -eq 1 ] ; then
+        echo "Display the routing table:"
+        echo "=========================="
+        $DRYRUN $ROUTER_FLDR/$ROUTER_PRG viewTable $EXPERIMENT_NAME
+      else
+        echo "Router is not enabled for this experiment!"
+      fi
       ;;
     "view-all")
-      viewAll
+      ANYTHING_SELECTED=1
+      viewAll 
       retVal=$?
       ;;
     "stop-all")
+      ANYTHING_SELECTED=1
       STOP_ALL_LABEL="Stopping all screen modules..."
       if [ $STOP_ALL_LOOP -eq 0 ] ; then
         STOP_ALL_LOOP=1
@@ -680,19 +815,20 @@ if [ $retVal -eq 0 ] ; then
       READ_ENTER=0
       ;;
     "select")
-      shift
-      while [ "$1" != "" ] ; do
-        countInParameters  $1 ${ALL_MOD_NAME[@]}
+      ANYTHING_SELECTED=1
+      _paramIdx=$(($_paramIdx+1))
+      while [ $_paramIdx -lt ${#_PARAMS[@]} ] ; do
+        countInParameters ${_PARAMS[$_paramIdx]} ${ALL_MOD_NAME[@]}
         if [ $? -gt 0 ] ; then
-          _modules+=( $1 )
+          _modules+=( ${_PARAMS[$_paramIdx]} )
         else  
-          countInParameters $1 ${GLOB_PARAMS[@]}
+          countInParameters ${_PARAMS[$_paramIdx]} ${GLOB_PARAMS[@]}
           if [ $? -eq 0 ] ; then
-            echo "Invalid module!"
-            endPrg 1          fi
+            echo "Invalid module '${_PARAMS[$_paramIdx]}'!"
+            endPrg 1
           fi
         fi
-        shift
+        _paramIdx=$(($_paramIdx+1))
       done
       runAutomated ${_modules[@]}
       _retVal=$?
@@ -700,82 +836,67 @@ if [ $retVal -eq 0 ] ; then
       if [ ! $_retVal -eq 0 ] ; then
         echo "An error occured during starting one of the modules."
       fi
-      if [ $USE_TERMINAL -eq 0 ] ; then
-        echo "Use 'screen -r -S <screen-name>' to reattach to any screen."
-        echo "Once reattached, press 'Ctrl-a d' to detach again."
-        echo "For more information on how to use screen, use 'man screen'."
+
+      if [ $ENABLE_ROUTER -eq 1 ] ; then
+        echo "Call $0 view-table to see the routers RIB-IN."
       fi
-      echo "Call $0 view-table to see the routers RIB-IN."
       READ_ENTER=0
       ;;
     "all")
+      ANYTHING_SELECTED=1
       runAutomated ${ALL_MOD_NAME[@]}
       _retVal=$?
       echo
       if [ ! $_retVal -eq 0 ] ; then
         echo "An error occured during starting one of the modules."
       fi
-      if [ $USE_TERMINAL -eq 0 ] ; then
-        echo "Use 'screen -r -S <screen-name>' to reattach to any screen."
-        echo "Once reattached, press 'Ctrl-a d' to detach again."
-        echo "For more information on how to use screen, use 'man screen'."
-      fi
       echo "Call $0 view-table to see the routers RIB-IN."
       READ_ENTER=0
       ;;
     "cache")
-      if [ $ENABLE_CACHE -eq 1 ] ; then
-        cd $DEMO_BIN_FLDR
-        startPrg "$PRG_SFX$PRG_CACHE" "-f" "$CFG_CACHE" $PORT_CACHE
-        retVal=$?
-      else
-        retVal=1
-      fi
-      ;;
-    "srx")
-      if [ $ENABLE_SRX -eq 1 ] ; then
-        cd $DEMO_BIN_FLDR
-        startPrg "$PRG_SFX$PRG_SRX" "-f" "$CFG_SRX"
-        retVal=$?
-      else
-        retVal=1
-      fi      
+      ANYTHING_SELECTED=1
+      cd $DEMO_BIN_FLDR
+      isInArray "cache" ${SUDO_MODULES[@]}
+      startPrg $? "$PRG_SFX$PRG_CACHE" "-f" "$CFG_CACHE" $PORT_CACHE
+      retVal=$?
       ;;
     "router")
       if [ $ENABLE_ROUTER -eq 1 ] ; then
-        cd $DEMO_SBIN_FLDR
-        startPrg "$PRG_SFX$PRG_ROUTER" "-f" "$CFG_ROUTER"
+        ANYTHING_SELECTED=1
+        cd $ROUTER_FLDR
+        isInArray "router" ${SUDO_MODULES[@]}
+        startPrg $? "$PRG_SFX$ROUTER_PRG" "start" "$EXPERIMENT_NAME" "$ROUTER_PARAMS"
         retVal=$?
       else
+        if [ $SKIP_ROUTER -eq 0 ] ; then
+          echo "WARNING: Module 'brio2' is not supported in this experiment!"
+        else
+          echo "WARNING: Router is manually disabled '--SKIP-ROUTER'!"
+        fi
         retVal=1
       fi      
       ;;
     "brio1")
-      if [ $ENABLE_BRIO1 -eq 1 ] ; then
-        cd $DEMO_BIN_FLDR
-        startPrg "$PRG_SFX$PRG_BRIO" "-f" "$CFG_BRIO1" "$BRIO1_PARAMS"
-        retVal=$?
-      else
-        retVal=1
-      fi
+      ANYTHING_SELECTED=1
+      cd $DEMO_BIN_FLDR
+      isInArray "brio1" ${SUDO_MODULES[@]}
+      startPrg $? "$PRG_SFX$PRG_BRIO" "-f" "$CFG_BRIO1" "$BRIO1_PARAMS"
+      retVal=$?
       ;;
     "brio2")
       if [ $ENABLE_BRIO2 -eq 1 ] ; then
-        if [ $SKIP_BRIO2 -eq 0 ] ; then
-          cd $DEMO_BIN_FLDR
-          startPrg "$PRG_SFX$PRG_BRIO" "-f" "$CFG_BRIO2" "$BRIO2_PARAMS"
-          retVal=$?
-        else
-          echo "Module '$1' not included in this example!"
-          retVal=1
-          READ_ENTER=0
-        fi
+        ANYTHING_SELECTED=1
+        cd $DEMO_BIN_FLDR
+        isInArray "brio2" ${SUDO_MODULES[@]}
+        startPrg $? "$PRG_SFX$PRG_BRIO" "-f" "$CFG_BRIO2" "$BRIO2_PARAMS"
+        retVal=$?
       else
+        echo "WARNING: Module 'brio2' is not supported in this experiment!"
         retVal=1
       fi
       ;;
     *)
-      echo "Unknown Module '$1'"
+      echo "Unknown Module '${_PARAMS[$_paramIdx]}'"
       retVal=1
       READ_ENTER=0
       ;;
@@ -784,5 +905,9 @@ fi
 
 if [ $READ_ENTER -eq 1 ] ; then
   read -p "Press Enter "
+fi
+
+if [ $ANYTHING_SELECTED -eq 0 ] ; then
+  echo "INFO: Nothing was selected to run!"
 fi
 endPrg $retVal

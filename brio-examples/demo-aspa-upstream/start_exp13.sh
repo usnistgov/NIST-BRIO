@@ -3,37 +3,50 @@
 # but can be overwritten here. For more detail on that they do
 # please see the file ../bin/start_example.sh
 
+# The setinga commented below are the default setting
 # PORT_CACHE=50000
-# PORT_SRX=17900
 # PORT_ROUTER=179
 # STOP_ALL_LOOP=3
 # LISTEN_TIMEOUT=10
 # SUDO_MODULES+=("router")
-# SIT_AND_WAIT_TIME=5
+# SIT_AND_WAIT_TIME=10
 # SIT_AND_WAIT_MOD=("router")
+#
+# Needed if BGPsec is part of the experimentation / needed for BRIO
+# Default value is calculated to the <install directory>/etc/srxcryptoapi.conf"
+# CFG_SCA_NAME=""
+#
+# ENABLE_ROUTER=0
+# ENBALE_BRIO2=0
+#
+# ROUTER_PRG=router.sh
+# Default value is calculated to the <examples directory>/bin"
+# ROUTER_FLDR=""
+#
+# CFG_CACHE_NAME="cache.script"
+# CFG_BRIO1_NAME="brio1.script"
+# CFG_BRIO2_NAME="-"
 
+# Command line parameter examples for BRIO1 and BRIO2
 # BRIO1_PARAMS="--show-settings"
-# BRIO2_PARAMS="--show-settings"
+# BRIO2_PARAMS=""
+# ROUTER_PARAMS=""
 
-# By Default, all are enabled (1), to diable set to (0).
-# ENABLE_CACHE=1
-ENABLE_SCA=0
-ENABLE_SRX=0
-ENABLE_ROUTER=0
-# ENABLE_BRIO1=1
-# ENABLE_BRIO2=1
+
+EXPERIMENT_NAME="upstream-exp13"
+
+ENABLE_ROUTER=1
+ENABLE_BRIO1=1
+ENABLE_BRIO2=1
 
 CFG_CACHE_NAME="exp13.brio_rc.script"
-CFG_SRX_NAME="-"
-CFG_SCA_NAME="-"
-CFG_ROUTER_NAME="-"
 CFG_BRIO1_NAME="exp13.brio_tg.as65030.conf"
 CFG_BRIO2_NAME="exp13.brio_tg.as65050.conf"
 
 _STARTER="../bin/start_example.sh"
 if [ -e $_STARTER ] ; then
-  _BGP_SRX_CALLER=$(pwd | sed -e "s#.*/\([^/]*\)#\1#g")
-  source $_STARTER 
+  _BRIO_CALLER=$(pwd | sed -e "s#.*/\([^/]*\)#\1#g")
+  source $_STARTER
 else
   echo "Cannot find '$_STARTER', Abort Operation"
   exit 1 

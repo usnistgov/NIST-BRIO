@@ -23,7 +23,7 @@ _P_NO_LOOPBACK=1
 _CUSTOM_PFX_24="192.168.255.0"
 
 # Added a version string to the configuration file.
-VERSION="b0.7.0.1-0001"
+VERSION="b0.7.1.2-0001"
 
 ##############################################################################
 ##  LOAD THE LIBRARY
@@ -168,7 +168,7 @@ while [ "$1" != "" ] ; do
        ;;
     "-i")
        echo
-       fill_SYS_IP 1 "" 1 1 > /dev/null
+       fill_SYS_IP 0 "" 1 2 > /dev/null
        echo "The following System IP addresses are available for usage:"
        echo
        _idx=0
@@ -715,6 +715,17 @@ if [ $_P_CHECK_ONLY -eq 0 ] ; then
       println "Failed!"
       _MISSING+=("$_ASIP")
       _FAILED=1
+    fi
+    if [ ${#_MISSING[@]} -gt 2 ] ; then
+      # Enough failed, we don't need to go through all, bear up here!
+      println
+      println "   Too many addresses failed - Abort check!"
+      println
+      println "   It appears the IP configuration file was done earlier with"
+      println "   a different set of assigned IP addresses."
+      println
+      println "   * Recommendation: Uninstall and reinstall the EXAMPLES! *"
+      break;
     fi
   done
   if [ $_FAILED -eq 1 ] ; then

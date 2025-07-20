@@ -73,7 +73,7 @@ an AS, it only asserts if another AS is its Provider or Not Provider.
 | AS 65030 (D) | AS 65050 (F) AS 65060 (G) |
 | AS 65060 (G) | AS 0                      |
 
-## Examples of Upstream Path verification
+## Examples of Downstream Path verification
 BGP update received from a customer or lateral peers.
 
 | Exp  | Receiving / Verifying AS | AS path (Unique ASes) | AS path length | max_up_ramp | max_down_ramp | min_up_ramp | min_down_ramp | Upstream Path Verification Result |

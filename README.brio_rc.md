@@ -1,4 +1,4 @@
-# BGP-RPKI-IO Validation Cacne Test Harness
+# BGP-RPKI-IO Validation Cache Test Harness
 The BGP-RPKI-IO (BRIO) RPKI Cache Test Harness (brio_rc) allows to produce 
 synthetic RPKI data and timed / event driven data flow. This means that RPKI 
 payloads can be pre-scripted announcements and withdrawals. **It is multi-client capable**

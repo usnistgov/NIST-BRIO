@@ -1,0 +1,30 @@
+# For packages, use pkg:<name>
+# For repositories, use repo:<name>
+# Multiple packages and repos can be specified in the same line
+# e.g. pkg: <name1> <name2>
+
+cfg init: 
+cfg pkg_installer: apt
+cfg repo_installer: 
+cfg yes: -y
+cfg install: install
+cfg update: update; apt -y upgrade
+
+pkg: vim
+pkg: unzip
+pkg: gcc
+pkg: automake
+pkg: make
+pkg: libtool
+pkg: openssl
+pkg: libreadline-dev
+pkg: libconfig-dev
+pkg: libssl-dev
+pkg: uthash-dev
+pkg: iputils-ping
+pkg: net-tools
+pkg: sed
+pkg: screen
+pkg: sudo
+
+repo:

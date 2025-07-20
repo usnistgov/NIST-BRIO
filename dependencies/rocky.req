@@ -1,0 +1,35 @@
+# For packages, use pkg:<name>
+# For repositories, use repo:<name>
+# Multiple packages and repos can be specified in the same line
+# e.g. pkg: <name1> <name2>
+
+cfg init: dnf -y install 'dnf-command(config-manager)'
+cfg pkg_installer: dnf
+cfg repo_installer: dnf config-manager --enable
+cfg yes: -y
+cfg install: install
+cfg update: update
+
+pkg: gcc
+pkg: openssl
+pkg: epel-release
+pkg: autoconf
+pkg: net-tools
+pkg: iputils
+pkg: sudo
+pkg: automake
+pkg: make
+pkg: libtool
+pkg: libconfig
+pkg: libconfig-devel
+pkg: openssl-devel
+pkg: uthash-devel
+pkg: readline-devel
+pkg: sed
+pkg: screen
+pkg: which
+#tt Provides the 'ps' command 
+pkg: procps-ng
+
+#tt Required developer repo
+repo: devel
