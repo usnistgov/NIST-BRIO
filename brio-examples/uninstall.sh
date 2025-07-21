@@ -78,7 +78,7 @@ if [ ! -e $INSTALL_LOG ] ; then
   print_and_exit "Abort uninstall" 1
 fi
 
-MODULES=( $(sort -u $INSTALL_LOG) )
+MODULES=( $(sort -u $INSTALL_LOG | sed -E '/^[[:space:]]*#/d') )
 
 echo "Verify uninstall..."
 # Each module must be a valid directory

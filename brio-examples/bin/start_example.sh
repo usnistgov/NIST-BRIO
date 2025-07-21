@@ -13,7 +13,7 @@ if [ "$_BRIO_CALLER" == "" ] ; then
 fi
 
 PACKAGE_NAME="NIST-BRIO"
-VERSION="b0.7.1.2-0008"
+VERSION="b0.7.1.2-0010"
 DEBUG=0
 
 if [ "$1" == "version" ] || [ "$1" == "-v" ] ; then
@@ -212,9 +212,9 @@ if [ $ENABLE_ROUTER -eq 1 ] ; then
   ALL_MOD_NAME+=( "router" )
   ALL_MOD_PORT+=( $PORT_ROUTER )
   ALL_MOD_PORT_REQ+=( $PORT_CACHE ) # Wants the cache to be online
-  checkSUDO "cache" $PORT_ROUTER
+  checkSUDO "router" $PORT_ROUTER
 fi
-if [ $ENBALE_BRIO1  -eq 1 ] ; then 
+if [ $ENBALE_BRIO1 -eq 1 ] ; then 
   ALL_MOD_NAME+=( "brio1"  ) 
   ALL_MOD_PORT+=( 0 )
   if [ $ENABLE_ROUTER -eq 1 ] ; then
@@ -223,7 +223,7 @@ if [ $ENBALE_BRIO1  -eq 1 ] ; then
     ALL_MOD_PORT_REQ+=( 0 ) # The router might be running elsewhere
   fi
 fi 
-if [ $ENABLE_BRIO2  -eq 1 ] ; then 
+if [ $ENABLE_BRIO2 -eq 1 ] ; then 
   ALL_MOD_NAME+=( "brio2"  )
   ALL_MOD_PORT+=( 0 )
   if [ $ENABLE_ROUTER -eq 1 ] ; then
@@ -357,7 +357,7 @@ function startPrg()
   if [ "$_program" != "" ] ; then
     if [ -e $_program ] ; then
       echo "Current Folder: $(pwd)"
-      echo "Starting [$_sudo$_program $@]$_sudo_text..."    
+      echo "Starting [ $_sudo$_program $@]$_sudo_text..."    
       $DRYRUN $_sudo$_program $@
       _retVal=$?
 
@@ -865,7 +865,8 @@ if [ $retVal -eq 0 ] ; then
         ANYTHING_SELECTED=1
         cd $ROUTER_FLDR
         isInArray "router" ${SUDO_MODULES[@]}
-        startPrg $? "$PRG_SFX$ROUTER_PRG" "start" "$EXPERIMENT_NAME" "$ROUTER_PARAMS"
+        startPrg $? "$PRG_SFX$ROUTER_PRG" "start" "$EXPERIMENT_NAME" \
+                    -rp "$PORT_ROUTER" -cp "$PORT_CACHE" "$ROUTER_PARAMS"
         retVal=$?
       else
         if [ $SKIP_ROUTER -eq 0 ] ; then

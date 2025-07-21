@@ -30,6 +30,8 @@ pkg: screen
 pkg: which
 #tt Provides the 'ps' command 
 pkg: procps-ng
+#tt Provides the 'nc' command for the router.sh
+pkg: nmap-ncat
 
 #tt Required developer repo
 repo: devel

@@ -33,7 +33,7 @@
 # ROUTER_PARAMS=""
 
 
-EXPERIMENT_NAME="downstream-exp14"
+EXPERIMENT_NAME="demo-aspa-downstream:exp14"
 
 ENABLE_ROUTER=1
 ENABLE_BRIO2=0

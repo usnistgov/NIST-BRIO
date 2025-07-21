@@ -1,5 +1,34 @@
 #/!bin/bash
 
+# This software was developed by employees of the National Institute of
+# Standards and Technology (NIST), an agency of the Federal Government and is
+# being made available as a public service. Pursuant to title 17 United States
+# Code Section 105, works of NIST employees are not subject to copyright
+# protection in the United States.  This software may be subject to foreign
+# copyright.  Permission in the United States and in foreign countries, to the
+# extent that NIST may hold copyright, to use, copy, modify, create derivative
+# works, and distribute this software and its documentation without fee is hereby
+# granted on a non-exclusive basis, provided that this notice and disclaimer of
+# warranty appears in all copies.
+# 
+# THE SOFTWARE IS PROVIDED 'AS IS' WITHOUT ANY WARRANTY OF ANY KIND, EITHER
+# EXPRESSED, IMPLIED, OR STATUTORY, INCLUDING, BUT NOT LIMITED TO, ANY WARRANTY
+# THAT THE SOFTWARE WILL CONFORM TO SPECIFICATIONS, ANY IMPLIED WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND FREEDOM FROM
+# INFRINGEMENT, AND ANY WARRANTY THAT THE DOCUMENTATION WILL CONFORM TO THE
+# SOFTWARE, OR ANY WARRANTY THAT THE SOFTWARE WILL BE ERROR FREE.  IN NO EVENT
+# SHALL NIST BE LIABLE FOR ANY DAMAGES, INCLUDING, BUT NOT LIMITED TO, DIRECT,
+# INDIRECT, SPECIAL OR CONSEQUENTIAL DAMAGES, ARISING OUT OF, RESULTING FROM,
+# OR IN ANY WAY CONNECTED WITH THIS SOFTWARE, WHETHER OR NOT BASED UPON
+# WARRANTY, CONTRACT, TORT, OR OTHERWISE, WHETHER OR NOT INJURY WAS SUSTAINED
+# BY PERSONS OR PROPERTY OR OTHERWISE, AND WHETHER OR NOT LOSS WAS SUSTAINED
+# FROM, OR AROSE OUT OF THE RESULTS OF, OR USE OF, THE SOFTWARE OR SERVICES
+# PROVIDED HEREUNDER.
+# 
+# To see the latest statement, please visit:
+# https://www.nist.gov/director/copyright-fair-use-and-licensing-statements-srd-data-and-software
+# 
+
 # Detect the OS name. This needs to be here because some OS's do not have
 # bash installed by default. This needs to be done first.
 if [ -e /etc/os-release ] ; then
@@ -24,6 +53,7 @@ SED_CMD="sed -i "
 
 VERSION=b0.7.1.2
 PRG_NAME=$0
+VERBOSE=0
 
 # These are the Settings listed in the markdown scripts
 KNOWN_TOKENS=(
@@ -31,17 +61,20 @@ KNOWN_TOKENS=(
   "Peer_AS Peer_IP"
   "Mode"
   "Protocol"
-  "RPKI_Cache_IP RPKI_Cache_Port RPKI_Cache_Protocol"
+  "RPKI_Cache_IP" 
+  "RPKI_Cache_Port" 
+  "RPKI_Cache_Protocol"
 )
 
 # Provide some help 
 function syntax()
 {
   echo
-  echo "Syntax: $0 [(-l|-?|<type exp>)]"
+  echo "Syntax: $0 [(-l|-?|<type exp>)] [-v]"
   echo
   echo "  -l, --list  list all current knows parameters"
   echo "  -?          this screen"
+  echo "  -v          additional output"
   echo 
   echo "  type exp    if provided this is the filter for the configuration"
   echo "              files." 
@@ -60,14 +93,17 @@ if [ "$1" != "" ] ; then
   case "$1" in
     "-?") syntax ;;
     "-l" | "--list") 
-          echo "Known parameters in configuration templates:"
-          echo "   ${KNOWN_TOKENS[@]}"
-          echo
-          echo "Duplicate settings e.g. Peer_AS will be changed into Peer_AS "
-          echo "and Peer_AS_2, and so on." 
-          echo 
-          exit 0
-          ;;
+      echo "Known parameters in configuration templates:"
+      echo "   ${KNOWN_TOKENS[@]}"
+      echo
+      echo "Duplicate settings e.g. Peer_AS will be changed into Peer_AS "
+      echo "and Peer_AS_2, and so on." 
+      echo 
+      exit 0
+      ;;
+    "-v")
+      VERBOSE=1
+      ;;
     *)
       ;;
   esac
@@ -89,14 +125,14 @@ SRX_PREFIX=$( $FIND_CMD | grep -E "local-[0-9\.]+$" )
 
 router=0
 validator=1
-experimentation=2
 
 # QuaggaSRx Configuration
-PROGRAMS[$router]=$($FIND_CMD | grep local | grep bgpd$)
+PROGRAMS[$router]=$($FIND_CMD | grep local | grep bgpd$ | head -n 1)
+# The configuration filename is only used to generate a template. 
 CONFIGS[$router]=$BRIO_PREFIX/etc/bgpd.conf
 
 # SRx Server Configuration
-PROGRAMS[$validator]=$($FIND_CMD | grep local | grep srx_server$)
+PROGRAMS[$validator]=$($FIND_CMD | grep local | grep srx_server$ | head -n 1)
 CONFIGS[$validator]=$BRIO_PREFIX/etc/srxcryptoapi.conf
 
 # Markdown description for router experiments 
@@ -223,6 +259,8 @@ function showConfig()
   echo
 }
 
+# This script builds the router configuration for QuaggaSRx, the NIST-BGP-SRx
+# frameworks BGP router (Quagga Based).
 function buildRouterCfgTemplate()
 {
   cat << EOF > ${CONFIGS[$router]}.tpl
@@ -237,7 +275,7 @@ function buildRouterCfgTemplate()
 hostname bgpd
 password zebra
 
-router bgp {ASN_Number}
+router bgp {AS_Number}
   bgp router-id {IP_Address}
 
   srx display
@@ -349,14 +387,18 @@ function buildRepository()
           | sed -E 's/^[[:space:]]+//; s/[[:space:]]+$//' | sed -e "s/ /_/g") 
     )
     match
-    echo "    * Process configuration data:" 
+    if [ $VERBOSE -eq 1 ] ; then
+      echo "    * Process configuration data:" 
+    fi
     _tokenArr=( )
     _line=""
     for _token in ${_data[@]} ; do
       if [ "$_token" == "Setting:Value" ] ; then
         continue;
       fi
-      echo -n "      > Token: $_token"
+      if [ $VERBOSE -eq 1 ] ; then
+        echo -n "      > Token: $_token"
+      fi
       _key_value=( $(echo $_token | sed -e "s/:/ /g") )
       _key=${_key_value[0]}
       _value=${_key_value[1]}
@@ -366,14 +408,18 @@ function buildRepository()
       if [ $_counter -gt 0 ] ; then
         _counter=$(($_counter+1))
         _key+="_$_counter"
-        echo -n "$(tab ${#_token} ' ' 20 )--> $_key:$_value"
+        if [ $VERBOSE -eq 1 ] ; then
+          echo -n "$(tab ${#_token} ' ' 20 )--> $_key:$_value"
+        fi
       fi 
       if [ "$_line" != "" ] ; then
         _line+=",$_key:$_value"
       else
         _line="$_key:$_value"
       fi
-      echo
+      if [ $VERBOSE -eq 1 ] ; then
+        echo
+      fi
     done
     EXPERIMENTS+=( $_line )
   done
@@ -393,17 +439,15 @@ function buildConfigurations
 
   for _token in ${EXPERIMENTS[@]} ; do
     _data=( $(echo $_token | sed -e "s/,/ /g") )
-    _element=( $(echo ${_data[0]} | sed -e "s/:/ /g") )
-    _expType=${_element[0]}
-    _expNum=${_element[1]}
-    _configFile=$( echo ${CONFIGS[$router]}.tpl | sed -e "s/.conf.tpl/$_expType-$_expNum.conf/g")
+    _experiment=$(echo ${_data[0]} | sed -e "s/:/-/g")
+    _configFile=$( echo ${CONFIGS[$router]}.tpl | sed -e "s/.conf.tpl/-$_experiment.conf/g")
     echo -n "  - Create configuration file $_configFile..."
     cp ${CONFIGS[$router]}.tpl $_configFile &>/dev/null
     match $? 0 clean_exit 1 "ERROR: Configuration file could not be created!"
 
     # Skip firast item, it is already processed
     _idx=1
-    echo -n "  - Update configuration file..."
+    echo -n "    * Update configuration file..."
     while [ $_idx -lt ${#_data[@]} ] ; do
       _key_value=( $(echo ${_data[$_idx]} | sed -e "s/:/ /g") )
       _value=${_key_value[1]}
@@ -416,7 +460,7 @@ function buildConfigurations
     done
     match 0 0
 
-    echo -n "  - Cleanup un-used configurations..."
+    echo -n "    * Cleanup un-used configurations..."
     $SED_CMD -E '/\{.*\}/ s/^/! /' $_configFile
     match $? 0
   done
@@ -430,3 +474,4 @@ buildRepository $@
 echo "Build configurations:"
 buildConfigurations
 
+echo
