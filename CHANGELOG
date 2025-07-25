@@ -3,13 +3,19 @@ prior b7.0.0 are listed in the NIST BGP-SRx repository. This repository does
 focus on the testing aspect.
 
 Version b7.1.2
+  * brio-examples: Renamed router setting in configuration markdown from 
+    Evaluation into Validation
+  * brio-examples: Made some documentation more clear to understand
+  * brio-examples: Modified the starter script to use a router configuration 
+    file that controlls how the router is started
   * brio-examples: Added more functionality to lib/functions.sh script
-  * brio-examples: Abord installation when too many configured IP check fail.
+  * brio-examples: Abord installation when too many configured IP check fail
   * brio-examples: Fixed errors in start_example.sh
   * brio-examples: Added parameter --SKIP-ROUTER to start_example.sh to 
     overwrite the configuration
   * brio-examples: Added netcat to router.sh to simulate a process listening on 
     port 179
+  * Added tools folder to provide some helper tools
 Version b7.1.1
   * brio-examples: Fixed start_expX.sh scripts ans start_example.sh script to 
     propely locate the srxcryptoapi.conf
@@ -19,22 +25,22 @@ Version b7.1.0
   * brio-examples: Changes all starter scripts to allign with the scope of the 
     experiment starter. 
   * brio-examples: Modified the starter script to only include brio_tg and 
-    brio_tc and for the router it uses a template router.sh shell script.
+    brio_tc and for the router it uses a template router.sh shell script
 Version b7.0.3
   * brio-examples: Fixed error in configuration script to show all available 
     IP/s with '-i' Version b0.7.0.2
   * brio-examples: Added .gitignore to prevent autogeneraqted configuration 
-    files from being checked in.
+    files from being checked in
   * brio-examples: Added prepare.sh script containing some usefull alias'es
 Version b7.0.1
   * brio-examples: Added ASPA examples
   * brio-examples: Modified example configuration, installation, and start 
     framework.
   * brio-examples: When markdown files link to .tpl files, the .tpl suffix will 
-    me rewritten into .conf for the installed files.
+    me rewritten into .conf for the installed files
   * bgprpki-io: Synchronized versioning accross all code in bgprpk-io.
-  * bgprpki-io: Added --show-settings to print out configured settings.
+  * bgprpki-io: Added --show-settings to print out configured settings
   * bgprpki-io: Added --disable_bgpsec parameter and disable_bgpsec
-    configuration to allow operation as BGP feeder only.
-  * bgprpki-io: Changed default mode from BGP_C to BGP.
+    configuration to allow operation as BGP feeder only
+  * bgprpki-io: Changed default mode from BGP_C to BGP
   * bgprpki-io: Removed un-used structs.

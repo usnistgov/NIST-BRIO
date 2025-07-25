@@ -13,7 +13,7 @@ if [ "$_BRIO_CALLER" == "" ] ; then
 fi
 
 PACKAGE_NAME="NIST-BRIO"
-VERSION="b0.7.1.2-0010"
+VERSION="b0.7.1.2-0015"
 DEBUG=0
 
 if [ "$1" == "version" ] || [ "$1" == "-v" ] ; then
@@ -27,11 +27,27 @@ echo "Start $_BRIO_CALLER $@..."
 DEMO_CURR_FLDR=$(pwd)
 DEMO_FLDR=$(readlink -f $0 | xargs dirname)
 DEMO_PREFIX_FLDR=$(echo $DEMO_FLDR | sed -e "s/\(.*\)\/opt\/.*/\1/g")
-DEMO_BIN_FLDR=$DEMO_PREFIX_FLDR/bin
-DEMO_ETC_FLDR=$DEMO_PREFIX_FLDR/etc
+LOCAL_BIN_FLDR=$DEMO_PREFIX_FLDR/bin
+LOCAL_SBIN_FLDR=$DEMO_PREFIX_FLDR/sbin
+LOCAL_ETC_FLDR=$DEMO_PREFIX_FLDR/etc
 DEMO_EXAMPLES_FLDR=$DEMO_PREFIX_FLDR/opt/brio-examples
-DEMO_EX_SCRIPT_FLDR=$DEMO_EXAMPLES_FLDR/bin
+DEMO_EX_BIN_FLDR=$DEMO_EXAMPLES_FLDR/bin
+DEMO_EX_ETC_FLDR=$DEMO_EXAMPLES_FLDR/etc
 DEMO_EX_LIB_FLDR=$DEMO_EXAMPLES_FLDR/lib
+
+if [ $DEBUG -eq 1 ] ; then
+  echo
+  echo "DEMO_CURR_FLDR=$DEMO_CURR_FLDR"
+  echo "DEMO_FLDR=$DEMO_FLDR"
+  echo "DEMO_PREFIX_FLDR=$DEMO_PREFIX_FLDR"
+  echo "LOCAL_BIN_FLDR=$LOCAL_BIN_FLDR"
+  echo "LOCAL_ETC_FLDR=$LOCAL_ETC_FLDR"
+  echo "DEMO_EXAMPLES_FLDR=$DEMO_EXAMPLES_FLDR"
+  echo "DEMO_EX_BIN_FLDR=$DEMO_EX_BIN_FLDR"
+  echo "DEMO_EX_ETC_FLDR=$DEMO_EX_ETC_FLDR"
+  echo "DEMO_EX_LIB_FLDR=$DEMO_EX_LIB_FLDR"
+  echo
+fi
 
 # Indicator if anything did run!
 ANYTHING_SELECTED=0
@@ -59,7 +75,12 @@ fi
 # only be set to '1' if ENABLE_ROUTER was original set to '1'
 SKIP_ROUTER=0
 
+# Parameters passed through to the router.
+ROUTER_PARAMS=( )
+
 _ALL_PARAMS=( )
+# as long as enableAllParams is enable, all params are store in _ALL_PARAMS
+_enableRtrParams=0
 while [ "$1" != "" ] ; do
   case "$1" in 
     "--SKIP-ROUTER")
@@ -74,12 +95,29 @@ while [ "$1" != "" ] ; do
         ENABLE_ROUTER=0
       fi
       ;;
-    *) 
-      _ALL_PARAMS+=( $1 )
+    "--router-param")
+      if [ "$2" == "" ] ; then
+        echo "ERROR: --router-param requires <parameters>."
+        endPrg 1
+      fi
+      # Fill the ramainder with into ROUTER_PARAMS
+      _enableRtrParams=1
+      ;;
+    *)
+      if [ $_enableRtrParams -eq 1 ] ; then
+        ROUTER_PARAMS+=( $1 )
+      else
+        _ALL_PARAMS+=( $1 )
+      fi
       ;;
   esac
   shift
 done
+
+if [ $DEBUG -eq 1 ] ; then
+  echo _ALL_PARAMS=${_ALL_PARAMS[@]}
+  echo ROUTER_PARAMS=${ROUTER_PARAMS[@]}
+fi
 
 # Going forward we use _ALL_PARAMS in lieu of $@ - _ALL_PARAMS will be replaced
 # with _PARAMS at a later point.
@@ -102,8 +140,8 @@ if [ "$ENABLE_BRIO2"   == "" ] ; then ENABLE_BRIO2=0   ; fi
 
 ## Set Router Information
 if [ $ENABLE_ROUTER -eq 1 ] ; then
-  if [ "$ROUTER_PRG"  == "" ] ; then ROUTER_PRG=router.sh             ; fi
-  if [ "$ROUTER_FLDR" == "" ] ; then ROUTER_FLDR=$DEMO_EX_SCRIPT_FLDR ; fi
+  if [ "$ROUTER_PRG"  == "" ] ; then ROUTER_PRG=rtr-wrapper.sh             ; fi
+  if [ "$ROUTER_FLDR" == "" ] ; then ROUTER_FLDR=$DEMO_EX_BIN_FLDR ; fi
 else
   echo "INFO: Router is disabled!"
 fi
@@ -113,10 +151,11 @@ if [ "$PORT_CACHE"     == "" ] ; then PORT_CACHE=50000 ; fi
 if [ "$PORT_ROUTER"    == "" ] ; then PORT_ROUTER=179  ; fi
 
 ## Set default configurations
-if [ "$CFG_SCA_NAME"   == "" ] ; then CFG_SCA_NAME="srxcryptoapi.conf" ; fi
-if [ "$CFG_CACHE_NAME" == "" ] ; then CFG_CACHE_NAME="cache.script"    ; fi
-if [ "$CFG_BRIO1_NAME" == "" ] ; then CFG_BRIO1_NAME="brio1.conf"      ; fi
-if [ "$CFG_BRIO2_NAME" == "" ] ; then CFG_BRIO2_NAME="brio2.conf"      ; fi
+# CFG_ROUTER_NAME is optional so no need to process here
+if [ "$CFG_ROUTER_NAME" == "" ] ; then CFG_ROUTER_NAME="rtr-wrapper.cfg" ; fi
+if [ "$CFG_CACHE_NAME"  == "" ] ; then CFG_CACHE_NAME="cache.script"     ; fi
+if [ "$CFG_BRIO1_NAME"  == "" ] ; then CFG_BRIO1_NAME="brio1.conf"       ; fi
+if [ "$CFG_BRIO2_NAME"  == "" ] ; then CFG_BRIO2_NAME="brio2.conf"       ; fi
 
 ## Set default runtime parameters
 # Perform the stop all until $STOP_ALL_LOOP -eq 0. This allows to tweak the 
@@ -240,7 +279,27 @@ if [ $DEBUG -eq 1 ] ; then
 fi
 
 CFG_CACHE=$DEMO_FLDR/$CFG_CACHE_NAME
-CFG_SCA=$DEMO_ETC_FLDR/$CFG_SCA_NAME
+if [ $ENABLE_ROUTER -eq 1 ] && [ "$CFG_ROUTER_NAME" != "" ] ; then
+  echo "Scan for BGP router configuration:"
+  CFG_ROUTER=$(pwd)/$CFG_ROUTER_NAME
+  echo -n "  - Check for: $CFG_ROUTER_NAME..." 
+  if [ -e $CFG_ROUTER_NAME ] ; then
+    echo "found"
+  else
+    echo "not found!"
+    CFG_ROUTER=$DEMO_EXAMPLES_FLDR/etc/$CFG_ROUTER_NAME
+    echo -n "  - Check for: $CFG_ROUTER..."     
+    if [ -e $CFG_ROUTER ] ; then
+      echo "found!"
+    else
+      echo "not found!"
+      CFG_ROUTER=$LOCAL_ETC_FLDR/$CFG_ROUTER_NAME
+      echo "  - Set to: $CFG_ROUTER!"     
+    fi
+  fi
+else
+  CFG_ROUTER=
+fi
 CFG_BRIO1=$DEMO_FLDR/$CFG_BRIO1_NAME
 CFG_BRIO2=$DEMO_FLDR/$CFG_BRIO2_NAME
 
@@ -249,7 +308,7 @@ CFG_BRIO2=$DEMO_FLDR/$CFG_BRIO2_NAME
 #
 function syntax()
 {
-  echo "$0 <module> [-t] [--wait-for-enter] [--gloal-binary] [-d] | <command> [-d]"
+  echo "$0 <module> [-t] [--wait-for-enter] [--gloal-binary] [-d] | <command> [-d] [--router-param <parameters>]"
   echo
   echo " --wait-for-enter Wait for the enter key to be pressed"
   echo "                  before the program ends." 
@@ -262,6 +321,9 @@ function syntax()
   echo " -d               Perform a dry run only!"
   if [ $ENABLE_ROUTER -eq 1 ] ; then
     echo " --SKIP-ROUTER    Overwrite configuration and disable router!"
+    echo " --router-param <parameters>"
+    echo "                Uses all remaining parameters ass pass trhough to the"
+    echo "                BGProuter." 
   fi
   echo
   echo "Command:"
@@ -329,8 +391,6 @@ function endPrg()
 #
 function startPrg()
 {
-  echo "startPrg: $@"
-
   local _retVal=1
   local _sudo=""
   local _sudo_text=""
@@ -355,9 +415,8 @@ function startPrg()
   shift
 
   if [ "$_program" != "" ] ; then
+    echo "Starting [ $_sudo$_program $@ ]$_sudo_text..."    
     if [ -e $_program ] ; then
-      echo "Current Folder: $(pwd)"
-      echo "Starting [ $_sudo$_program $@]$_sudo_text..."    
       $DRYRUN $_sudo$_program $@
       _retVal=$?
 
@@ -366,7 +425,9 @@ function startPrg()
         _retVal=$_retVal
       fi
     else
-      echo "ERROR: Cannot find './$_program'"
+      echo "ERROR: Cannot find '$_program'"
+      echo
+      echo "Verify that $(pwd)/$_program is properly installed!"
       echo "Abort operation"
       _retVal=1
     fi
@@ -699,17 +760,9 @@ function stopAll()
 # Switch into the demo folder
 cd $DEMO_FLDR
 
-if [ $DEBUG -eq 1 ] ; then
-  echo "Current folder...: $DEMO_CURR_FLDR"
-  echo "DEMO Folder......: $DEMO_FLDR" 
-  echo "DEMO_PREFIX_FLDR.: $DEMO_PREFIX_FLDR"
-  echo "DEMO_BIN_FDLR....: $DEMO_BIN_FLDR"
-  echo "DEMO_SBIN_FDLR...: $DEMO_SBIN_FLDR"
-fi
-
 # Check that all files are configured but also allow "-" to not consider a 
 # configure file.
-TMP_CFG_FILES=( "$CFG_CACHE" "$CFG_SCA" "$CFG_BRIO1" )
+TMP_CFG_FILES=( "$CFG_CACHE" "$CFG_ROUTER" "$CFG_BRIO1" )
 CFG_FILES=( )
 if [ $ENABLE_BRIO2 -eq 0 ] ; then
   TMP_CFG_FILES+=( "$CFG_BRIO2" )
@@ -778,8 +831,10 @@ fi
 
 _modules=()
 _paramIdx=0
+
 if [ $retVal -eq 0 ] ; then
   case ${_PARAMS[$_paramIdx]} in
+    #{SEGMENT: view-table}
     "view-table")
       ANYTHING_SELECTED=1
       if [ $ENABLE_ROUTER -eq 1 ] ; then
@@ -790,11 +845,13 @@ if [ $retVal -eq 0 ] ; then
         echo "Router is not enabled for this experiment!"
       fi
       ;;
+    #{SEGMENT: view-all}
     "view-all")
       ANYTHING_SELECTED=1
       viewAll 
       retVal=$?
       ;;
+    #{SEGMENT: stop-all}
     "stop-all")
       ANYTHING_SELECTED=1
       STOP_ALL_LABEL="Stopping all screen modules..."
@@ -814,6 +871,7 @@ if [ $retVal -eq 0 ] ; then
       retVal=$?
       READ_ENTER=0
       ;;
+    #{SEGMENT: select}
     "select")
       ANYTHING_SELECTED=1
       _paramIdx=$(($_paramIdx+1))
@@ -842,6 +900,7 @@ if [ $retVal -eq 0 ] ; then
       fi
       READ_ENTER=0
       ;;
+    #{SEGMENT: all}
     "all")
       ANYTHING_SELECTED=1
       runAutomated ${ALL_MOD_NAME[@]}
@@ -853,20 +912,29 @@ if [ $retVal -eq 0 ] ; then
       echo "Call $0 view-table to see the routers RIB-IN."
       READ_ENTER=0
       ;;
+    #{SEGMENT: cache}
     "cache")
       ANYTHING_SELECTED=1
-      cd $DEMO_BIN_FLDR
+      cd $LOCAL_BIN_FLDR
       isInArray "cache" ${SUDO_MODULES[@]}
       startPrg $? "$PRG_SFX$PRG_CACHE" "-f" "$CFG_CACHE" $PORT_CACHE
       retVal=$?
       ;;
+    #{SEGMENT: router}
     "router")
       if [ $ENABLE_ROUTER -eq 1 ] ; then
         ANYTHING_SELECTED=1
+        # build additional parameters
+        _localParam=( )
+        # Overwrite parameters that migt come from the custom experiment starter
+        # and also set the configuration file if one is found
+        if [ "$PORT_ROUTER" != "" ] ; then _localParam+=( "-rp"  "$PORT_ROUTER" ); fi
+        if [ "$PORT_CACHE"  != "" ] ; then _localParam+=( "-cp"  "$PORT_CACHE"  ); fi
+        if [ "$CFG_ROUTER"  != "" ] ; then _localParam+=( "-cfg" "$CFG_ROUTER"  ); fi
         cd $ROUTER_FLDR
         isInArray "router" ${SUDO_MODULES[@]}
         startPrg $? "$PRG_SFX$ROUTER_PRG" "start" "$EXPERIMENT_NAME" \
-                    -rp "$PORT_ROUTER" -cp "$PORT_CACHE" "$ROUTER_PARAMS"
+                    "${_localParam[@]}" "${ROUTER_PARAMS[@]}"
         retVal=$?
       else
         if [ $SKIP_ROUTER -eq 0 ] ; then
@@ -877,17 +945,19 @@ if [ $retVal -eq 0 ] ; then
         retVal=1
       fi      
       ;;
+    #{SEGMENT: brio1}
     "brio1")
       ANYTHING_SELECTED=1
-      cd $DEMO_BIN_FLDR
+      cd $LOCAL_BIN_FLDR
       isInArray "brio1" ${SUDO_MODULES[@]}
       startPrg $? "$PRG_SFX$PRG_BRIO" "-f" "$CFG_BRIO1" "$BRIO1_PARAMS"
       retVal=$?
       ;;
+    #{SEGMENT: brio2}
     "brio2")
       if [ $ENABLE_BRIO2 -eq 1 ] ; then
         ANYTHING_SELECTED=1
-        cd $DEMO_BIN_FLDR
+        cd $LOCAL_BIN_FLDR
         isInArray "brio2" ${SUDO_MODULES[@]}
         startPrg $? "$PRG_SFX$PRG_BRIO" "-f" "$CFG_BRIO2" "$BRIO2_PARAMS"
         retVal=$?

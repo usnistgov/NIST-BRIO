@@ -14,9 +14,11 @@ requires the router to be capable of processing ASPA.
 | Peer AS    | 65030 |                                                       |
 | Peer IP    | {IP_AS_65030-57} | The IP Address or the BGP peer             | 
 |            |       |                                                       |
-| Mode       | Passive | The router must not initiate the BGP session.       |
-| Protocol   | BGP-4 | Regular BGP-4 with ASPA enabled                       |
-|            |       |                                                       |
+| Mode       | Passive | The router must not initiate the BGP session.         |
+|            |         |                                                       |
+| Validation | Origin  | Perform Route Origin Validation                       |
+| Validation | ASPA    | Perform ASPA Validation                               |
+|            |         |                                                       |
 | RPKI Cache IP       | {IP_AS_65020-57} | The IP Address of the RPKI Validation Cache. |
 | RPKI Cache Port     | 50000 | The Port Address of the RPKI Validation Cache.|
 | RPKI Cache Protocol | TCP   | Regular TCP session.                          |

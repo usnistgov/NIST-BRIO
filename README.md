@@ -94,7 +94,7 @@ script allows to specify the folder where the software package will be installed
 in. ```./buildBRIO.sh -i <sandbox name>``` will build and install the framework 
 in the provided <sandbox> folder.  
 The installed code will be installed in the ```<sandbox name>/local``` folder.
-Use the [Quick Install Buide](QUICK_INSTALL.md) as guidance.
+Use the **[Quick Install Guide](QUICK_INSTALL.md)** as guidance.
 
 ### Building router configurations
 To generate router configurations the script build-router-config.sh scans 

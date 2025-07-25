@@ -1,0 +1,76 @@
+#!/bin/bash
+# This file is used by the router script router.sh and will we overwritten
+# in case cli parameters are provided. Mainly the configuration files for the 
+# router istelf are handed via cli 
+#
+# DO NOT MODIFY THIS FILE, MAKE A COPY router.cfg and put it in this folder
+# or the insalled etc folder [local/etc]
+#
+
+echo -n "Reading router.cfg..."
+
+if [ "$BRIO_ROUTER_WRAPPER" == "" ] ; then
+  echo "failed!"
+  echo "Ths configuration cannot be called directly, it needs to be sourced!"
+  exit 127
+fi
+
+## Indicates if the tool is configured. This setting must be manually set.
+CONFIGURED=0
+
+## Timeout for shutdown
+TIMEOUT=5
+
+## This is used in case the router out-sourced validation 
+## (e.g. NIST-BGP-SRx: router: QuaggaSRx and validator: SRx-Server)
+VALIDATOR_BIN=
+## Additional parameters for the validator.
+VALIDATOR_PARAMS=
+
+## The validator's cli parameter to set the configuration file. 
+VALIDATOR_CFG_PARAM=
+## The validator configuration file
+VALIDATOR_CFG=
+
+## The validator cli parameter to set the validator port. 'srx-server -> 17900' 
+VALIDATOR_PORT_PARAM=
+## The default router BGP Port (RFC 4271)
+VALIDATOR_PORT=
+
+## The router's cli parameter to set the rpki validation cache port. 
+VALIDATOR_RPKI_CACHE_PARAM=
+## The port the RPKI validation cache listens on
+VALIDATOR_RPKI_CACHE_PORT=
+
+
+## The router binary - here as example just netcat to have something to listen on
+## the router port.
+BGP_RTR_BIN="nc "
+
+##
+## To avoid issues with the below settings, do not match pass through parameters
+## with scripted parameters. e.g. passing a bgp router configuration  via
+## command line DOES NOT overwrite a configured setting. Either use scripted
+## parameters or pass through.
+##
+
+## The router's cli parameter to set the routers configuration file. 'often -f'
+BGP_RTR_CFG_PARAM=
+
+## The router configuration file
+BGP_RTR_CFG=
+
+## The routers cli parameter to set the BGP port. 'often -p' 
+BGP_RTR_PORT_PARAM="-p "
+## The default router BGP Port (RFC 4271)
+BGP_RTR_PORT=179
+
+## The router's cli parameter to set the rpki validation cache port. 
+BGP_RTR_RPKI_CACHE_PARAM=
+## The port the RPKI validation cache listens on (RFC 8210 - Port 323)
+BGP_RTR_RPKI_CACHE_PORT=
+
+## The command to show the bgp table (use 'quagga' for a quagga command)
+VIEW_TABLE_COMMAND=
+
+echo "[DONE]"

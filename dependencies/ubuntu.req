@@ -25,6 +25,9 @@ pkg: iputils-ping
 pkg: net-tools
 pkg: sed
 pkg: screen
+#tt To start a BGP daemon (port 179 applications need extended privileges)
 pkg: sudo
+#tt Used for experiments
+pkg: telnet
 
 repo:

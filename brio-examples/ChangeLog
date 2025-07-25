@@ -1,10 +1,14 @@
 Version b0.7.1.2
+  * Renamed router setting Evaliation into Validation and added a row per 
+    setting. (Router settings markup)
   * Added more functionality to lib/functions.sh script
   * Abord installation when too many configured IP check fail
   * Fixed errors in start_example.sh
   * Added hidden parameter --SKIP-ROUTER to start_example.sh to overwrite
     the configuration
   * Added netcat to router.sh/cfg to simulate a process listening on port 179
+  * Modified some documentaion in brio-examples/IP-Address.cfg to make it easier
+    to understand
 Version b0.7.1.1
   * Fixed start_expX.sh scripts ans start_example.sh script to propely locate
     the srxcryptoapi.conf

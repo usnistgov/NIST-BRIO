@@ -32,6 +32,8 @@ pkg: which
 pkg: procps-ng
 #tt Provides the 'nc' command for the router.sh
 pkg: nmap-ncat
+#tt Used for experiments
+pkg: telnet
 
 #tt Required developer repo
 repo: devel
