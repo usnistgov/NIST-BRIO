@@ -36,12 +36,11 @@ an AS, it only asserts if another AS is its Provider or Not Provider.
         |      /     \   /     \
               /<-p2p->\ /<-p2p->\
             (C)-------(D)-------[E]
-       /|\   *\       /        :*  \
-   C2P  |     *\     /        :*    \
-        |      *\   /        :*      \
-                *\ /        :*        \
-                *(A)::::::::*         (B)
-                *************
+       /|\    \*******/********:*  \
+   C2P  |      \     /        :*    \
+        |       \   /        :*      \
+                 \ /        :*        \
+                 (A)::::::::*         (B)
 
 [E] and [F] have no ASPAs
 
@@ -97,7 +96,7 @@ BGP update received from a customer or lateral peers.
 | [[910](exp910.README.tpl.md)]|  |                       |                |             |               |             |               |                                   |  
 |      |                          |                       |                |             |               |             |               |                                   |
 |   9  |           B              |    E A                |    2           |     2       |     2         |    1        |     1         |     Valid+                        |
-|  10  |           B              |    E A C              |    3           |     1       |     2         |    2        |     1         |     Valid++                       |
+|  10  |           B              |    E C A              |    3           |     1       |     2         |    2        |     1         |     Valid++                       |
 
 \* These examples are explained in more detail.   
 

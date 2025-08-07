@@ -53,7 +53,7 @@ if [ -e "$HOME" ] ; then cd $HOME &>/dev/null ; fi
 FIND_CMD="find . "
 SED_CMD="sed -i "
 
-VERSION=b0.7.1.2-0015
+VERSION=b0.7.1.2-0016
 PRG_NAME=$0
 VERBOSE=0
 
@@ -61,9 +61,11 @@ VERBOSE=0
 KNOWN_TOKENS=(
   "AS_Number IP_Address"
   "Peer_AS Peer_IP"
+  "Peer_Relation"
+  "Peer_BGPsec"
+  "Protocol"
   "Evaluation"
   "Mode"
-  "Protocol"
   "RPKI_Cache_IP" 
   "RPKI_Cache_Port" 
   "RPKI_Cache_Protocol"
@@ -127,17 +129,17 @@ FAILED="$COL_RED[FAILED]$COL_OFF"
 BRIO_PREFIX=$(find $HOME -type f -name 'brio_tg' | sed -nE 's#^(.*)/bin/brio_tg$#\1#p')
 SRX_PREFIX=$(find $HOME -type f -name 'bgpd' | sed -nE 's#^(.*)/sbin/bgpd$#\1#p')
 
-router=0
-validator=1
-
-# QuaggaSRx Configuration
-PROGRAMS[$router]=$($FIND_CMD | grep local | grep bgpd$ | head -n 1)
-# The configuration filename is only used to generate a template. 
-CONFIGS[$router]=$BRIO_PREFIX/etc/bgpd.conf
+validator=0
+router_qsrx=1
 
 # SRx Server Configuration
 PROGRAMS[$validator]=$($FIND_CMD | grep local | grep srx_server$ | head -n 1)
 CONFIGS[$validator]=$BRIO_PREFIX/etc/srxcryptoapi.conf
+
+# QuaggaSRx Configuration
+PROGRAMS[$router_qsrx]=$($FIND_CMD | grep local | grep bgpd$ | head -n 1)
+# The configuration filename is only used to generate a template. 
+CONFIGS[$router_qsrx]=$BRIO_PREFIX/etc/bgpd.conf
 
 # Markdown description for router experiments 
 EXPERIMENT_FILES=( $($FIND_CMD | grep local \
@@ -258,16 +260,16 @@ function showConfig()
   echo
   echo "BGP-SRx Configuration Setting:"
   echo "======================================================================="
-  echo "  ROUTER.....: ${PROGRAMS[$router]} -f ${CONFIGS[$router]}"
+  echo "  ROUTER.....: ${PROGRAMS[$router_qsrx]} -f ${CONFIGS[$router_qsrx]}"
   echo "  VALIDATOR..: ${PROGRAMS[$validator]} -f ${CONFIGS[$validator]}"
   echo
 }
 
 # This script builds the router configuration for QuaggaSRx, the NIST-BGP-SRx
 # frameworks BGP router (Quagga Based).
-function buildRouterCfgTemplate()
+function buildRouterCfgTemplate_QSRx()
 {
-  cat << EOF > ${CONFIGS[$router]}.tpl
+  cat << EOF > ${CONFIGS[$router_qsrx]}.tpl
 ! -*- bgp -*-
 !
 ! QuaggaSRx BGPd sample configuration file
@@ -291,14 +293,16 @@ router bgp {AS_Number}
 
   srx display
   srx set-proxy-id {IP_Address}
-
-  ! srx set-server {RPKI_Cache_IP} {RPKI_Cache_Port}
   ! We assume QSRx and SRx-Server are running on the same system
+  ! QuaggaSRx does not connect directly to RPKI Cache, it uses the srx-server
+  ! srx set-server {RPKI_Cache_IP} {RPKI_Cache_Port}
   srx set-server {IP_Address} 17900
   srx connect
   no srx extcommunity
 
+  srx keep-window 900
   ! [no] srx evaluation (origin|bgpsec|aspa)
+  srx evaluation bgpsec
   srx evaluation {Validation}
   srx evaluation {Validation_2}
   srx evaluation {Validation_3}
@@ -326,27 +330,33 @@ router bgp {AS_Number}
   srx policy aspa local-preference invalid      subtract 20
   srx policy aspa local-preference unknown      add      10
   srx policy aspa local-preference unverifiable subtract 5
-
   no srx policy aspa ignore undefined
 
 ! Specify Neighbors
 ! =================
-! neighbor AS {Peer_AS}
-  neighbor {Peer_IP} remote-as {Peer_AS}
-  neighbor {Peer_IP} {Mode}
-  neighbor {Peer_IP} ebgp-multihop
+  {Peer}! neighbor AS {Peer_AS}
+  {Peer}neighbor {Peer_IP} remote-as {Peer_AS}
+  {Peer}neighbor {Peer_IP} {Mode}
+  {Peer}neighbor {Peer_IP} ebgp-multihop
+  {Peer}neighbor {Peer_IP} bgpsec {BGPsec}
+  {Peer}neighbor {Peer_IP} aspa {Peer_Relation}
+  
+  {Peer_2}! neighbor AS {Peer_AS_2}
+  {Peer_2}neighbor {Peer_IP_2} remote-as {Peer_AS_2}
+  {Peer_2}neighbor {Peer_IP_2} {Mode}
+  {Peer_2}neighbor {Peer_IP_2} ebgp-multihop
+  {Peer_2}neighbor {Peer_IP_2} bgpsec {BGPsec_2}
+  {Peer_2}neighbor {Peer_IP_2} aspa {Peer_Relation_2}
 
-! neighbor AS {Peer_AS_2}
-  neighbor {Peer_IP_2} remote-as {Peer_AS_2}
-  neighbor {Peer_IP_2} {Mode}
-  neighbor {Peer_IP_2} ebgp-multihop
+  {Peer_3}! neighbor AS {Peer_AS_3}
+  {Peer_3}neighbor {Peer_IP_3} remote-as {Peer_AS_3}
+  {Peer_3}neighbor {Peer_IP_3} {Mode}
+  {Peer_3}neighbor {Peer_IP_3} ebgp-multihop
+  {Peer_3}neighbor {Peer_IP_3} bgpsec {BGPsec_3}
+  {Peer_3}neighbor {Peer_IP_3} aspa {Peer_Relation_3}
 
-! neighbor AS {Peer_AS_3}
-  neighbor {Peer_IP_3} remote-as {Peer_AS_3}
-  neighbor {Peer_IP_3} {Mode}
-  neighbor {Peer_IP_3} ebgp-multihop
-
-log stdout
+  line vty
+  log stdout
 
 EOF
 }
@@ -408,11 +418,9 @@ function buildRepository()
     _tokenArr=( )
     _line=""
     for _token in ${_data[@]} ; do
+      _Peer=""
       if [ "$_token" == "Setting:Value" ] ; then
         continue;
-      fi
-      if [ $VERBOSE -eq 1 ] ; then
-        echo -n "      > Token: $_token"
       fi
       _key_value=( $(echo $_token | sed -e "s/:/ /g") )
       _key=${_key_value[0]}
@@ -420,13 +428,34 @@ function buildRepository()
       countInParameters $_key ${_tokenArr[@]}
       _counter=$?
       _tokenArr+=( $_key )
+      if [ "$_key" == "Peer_AS" ] ; then
+        # Activate the peer
+        _Peer="Peer"
+      fi
       if [ $_counter -gt 0 ] ; then
         _counter=$(($_counter+1))
+        if [ "$_key" == "Peer_AS" ] ; then
+          # Update the peer number
+          _Peer+="_$_counter"
+        fi
         _key+="_$_counter"
         if [ $VERBOSE -eq 1 ] ; then
-          echo -n "$(tab ${#_token} ' ' 20 )--> $_key:$_value"
+          echo -n "      > Token: $_key$(tab ${#_key} '.' 22 ): $_value$(tab ${#_value} ' ' 20)($_token)"
         fi
-      fi 
+      else
+        if [ $VERBOSE -eq 1 ] ; then
+          echo -n "      > Token: $_key$(tab ${#_key} '.' 22 ): $_value"
+        fi
+      fi
+      if [ "$_Peer" != "" ] ; then
+        # Add the peer activation before the key
+        if [ "$_line" != "" ] ; then
+          _line+=",$_Peer:"
+        else
+          _line="$_Peer:"
+        fi
+      fi
+
       if [ "$_line" != "" ] ; then
         _line+=",$_key:$_value"
       else
@@ -436,6 +465,10 @@ function buildRepository()
         echo
       fi
     done
+    if [ $VERBOSE -eq 1 ] ; then
+      echo "      Line: $_line"
+      echo
+    fi
     EXPERIMENTS+=( $_line )
   done
 }
@@ -455,9 +488,9 @@ function buildConfigurations
   for _token in ${EXPERIMENTS[@]} ; do
     _data=( $(echo $_token | sed -e "s/,/ /g") )
     _experiment=$(echo ${_data[0]} | sed -e "s/:/-/g")
-    _configFile=$( echo ${CONFIGS[$router]}.tpl | sed -e "s/.conf.tpl/-$_experiment.conf/g")
+    _configFile=$( echo ${CONFIGS[$router_qsrx]}.tpl | sed -e "s/.conf.tpl/-$_experiment.conf/g")
     echo -n "  - Create configuration file $_configFile..."
-    cp ${CONFIGS[$router]}.tpl $_configFile &>/dev/null
+    cp ${CONFIGS[$router_qsrx]}.tpl $_configFile &>/dev/null
     match $? 0 clean_exit 1 "ERROR: Configuration file could not be created!"
 
     # Skip firast item, it is already processed
@@ -466,15 +499,24 @@ function buildConfigurations
     while [ $_idx -lt ${#_data[@]} ] ; do
       _key_value=( $(echo ${_data[$_idx]} | sed -e "s/:/ /g") )
       # Convert value to lower case
+      _key=${_key_value[0]}
       _value=$(echo ${_key_value[1]} | tr '[:upper:]' '[:lower:]')
       _idx=$(($_idx+1))
-      $SED_CMD "s#{${_key_value[0]}}#$_value#g" $_configFile
+      if [ "$_value" != "" ] ; then
+        $SED_CMD "s#{$_key}#$_value#g" $_configFile
+      fi
+      # Use the regular expression in the if statement.
+      echo "$_key" | grep -Eq '^Peer(_[1-9][0-9]*)?$' &>/dev/null
+      if [ $? -eq 0 ] ; then
+        $SED_CMD "s#{$_key}#$_value#g" $_configFile        
+      fi
     done
     match 0 0
 
     echo -n "    * Cleanup un-used configurations..."
     # Each line with a {...} block will receive a '!'
-    $SED_CMD -E '/\{.*\}/ s/^/! /' $_configFile
+#    $SED_CMD -E '/\{.*\}/ s/^/! /' $_configFile
+    $SED_CMD -E '/\{.*\}/d' $_configFile
     match $? 0
   done
 }

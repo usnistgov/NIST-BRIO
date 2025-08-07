@@ -1,4 +1,5 @@
 Version b0.7.1.2
+  * IP-Addr4ess.cfg had incorrect IP configuration for experiment 5-7
   * Renamed router setting Evaliation into Validation and added a row per 
     setting. (Router settings markup)
   * Added more functionality to lib/functions.sh script

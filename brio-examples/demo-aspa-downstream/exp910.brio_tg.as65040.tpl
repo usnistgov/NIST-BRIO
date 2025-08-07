@@ -21,23 +21,23 @@ session = (
     #  Topology as announced by brio_tg using BGP UPDATES:
     #
     #           65020     65040
-    #            (C)       [E]
-    #       /|\    x       x \
-    #   C2P  |      x     x   \
-    #        |       x   x     \
-    #                 x x       \
+    #            (C)xxxxxxx[E]
+    #       /|\    \       x \
+    #   C2P  |      \     x   \
+    #        |       \   x     \
+    #                 \ x       \
     #            (A) 65000     65010 (B)
     #
     #   BRIO: E
     #   IUT:  B
     #
-    #   The annouced Topology (except link E-B is forged)! 
+    #   The annouced Topology (except links E-C and E-A are forged)! 
     #
     #   The complete topology is described in the examples README file.
     #
     update = (  
               "10.65.0.0/22, B4 65000"
-              "10.65.20.0/23, B4 65000 65020"
+              "10.65.1.0/22, B4 65020 65000"
              );
 
     printOnSend = {

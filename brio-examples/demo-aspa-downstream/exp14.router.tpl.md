@@ -10,6 +10,9 @@ requires the router to be capable of processing ASPA.
 |            |       |                                                         |
 | Peer AS    | 65040 |                                                         |
 | Peer IP    | {IP_AS_65040-14} | The IP Address or the BGP peer               | 
+| Peer Relation | Provider | The Peering Relation (1)                          |
+| Peer BGPsec   |          | The BGPsec mode (2) - no value disabled!          | 
+|            |         |                                                       |
 |            |       |                                                         |
 | Mode       | Passive | The router must not initiate the BGP session.         |
 |            |         |                                                       |
@@ -19,5 +22,17 @@ requires the router to be capable of processing ASPA.
 | RPKI Cache IP       | {IP_AS_65040-14} | The IP Address of the RPKI Validation Cache. |
 | RPKI Cache Port     | 50000 | The Port Address of the RPKI Validation Cache. |
 | RPKI Cache Protocol | TCP   | Regular TCP session.                           |
+
+(1) The `Peer Relation` is  needed for ASPA and can contain the following values:
+* Customer  The peer is a topologically downstream (customer AS)
+* Lateral   The peering only includes prefixes of customers.
+* Provider  The peer is a topologically upstream neighbor (transit provider)
+* Sibling   The peer is transit provider and transit customer.
+
+(2) The `Peer BGPsec` setting specifies a possible BGPsec configuration between the 
+peers.
+* Both     Send BGPSEC and receive BGPSEC
+* Receive  Receive BGPSEC but send BGP4 only
+* Send     Send BGPSEC but receive BGP4 only
 
 [Back](exp14.README.tpl.md)

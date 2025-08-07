@@ -31,6 +31,10 @@
 # This script requires a bash shell, grep, awk, and sed to be available
 #
 # 
+# Version 3.1.0
+#  * Check if dependency folder and .req files exist.
+#  * Add --create to generate template .req file.
+#  * Added detection of OS version.
 # Version 3.0.2
 #  * Fixed issues with update and upgrade of systems.
 #  * Removed Ubuntu specialization from this script and be used in the init
@@ -53,7 +57,7 @@
 #
 
 # The version of this script
-VERSION=3.0.1
+VERSION=3.1.0
 # Detect the home directory
 HOME_DIR="$(dirname "$(realpath "$0")")"
 # Directory for the requirements files ubuntu.req, rocky.req, ...
@@ -86,9 +90,23 @@ else
   OS_NAME=$( uname )
 fi
 
+if [ -f /etc/os-release ]; then
+  OS_NAME=$( grep -e "^ID=" /etc/os-release | awk -F'=' '{print $2}' | sed -e "s/\"//g" )
+  OS_VERSION=$( grep -e "^VERSION_ID=" /etc/os-release | awk -F'=' '{print $2}' | sed -e "s/\"//g" )
+elif command -v sw_vers >/dev/null; then
+  OS_NAME=$(sw_vers -productName)
+  OS_VERSION=$(sw_vers -productVersion)
+else
+  OS_NAME=$(uname -s)
+  OS_VERSION=$(uname -r)
+fi
+OS_NAME=$(echo $OS_NAME | sed -E 's#^\b([^ -/]+)\b.*#\1#g')
+OS_VERSION=$(echo $OS_VERSION | sed -E 's#^([^\.]+)\..*#\1#g')
+OS_KEY=$(echo "${OS_NAME}-${OS_VERSION}" | awk '{print tolower($0)}')
+
 echo
-echo "Detected '$OS_NAME' operating system"
-echo 
+echo "Detected $OS_NAME $OS_VERSION operating system!"
+echo
 
 ################################################################################
 ## Provide a clean exit of the program
@@ -166,6 +184,60 @@ function assert()
   fi
 }
 
+# Create a dependency file/template
+# $1 os name (optional)
+function setup_dependency()
+{
+  local _os_dep=$REQ_DIR/"${1:-template}.req"
+  local _init=""
+  local _pkg_installer=""
+  local _yes=""
+  local _install=""
+  local _update=""
+  local _repo=""
+
+  mkdir -p $REQ_DIR
+
+  echo "# For packages, use pkg:<name>" >> $_os_dep
+  echo "# For repositories, use repo:<name>" >> $_os_dep
+  echo "# Multiple packages and repos can be specified in the same line" >> $_os_dep
+  echo "# e.g. pkg: <name1> <name2>" >> $_os_dep
+  echo >> $_os_dep
+  case "$1" in
+    "rocky")
+      _init="dnf -y install 'dnf-command(config-manager)'"
+      _pkg_installer="dnf"
+      _repo_installer="dnf config-manager --enable"
+      _yes="-y"
+      _install="install"
+      _update="update"
+      _repo="devel"
+      ;;
+    "ubuntu")
+      _init=""
+      _pkg_installer="apt"
+      _repo_installer=""
+      _yes="-y"
+      _install="install"
+      _update="update; apt -y upgrade"
+      ;;
+    *)
+      ;;
+  esac
+  echo "cfg init: $_init" >> $_os_dep
+  echo "cfg pkg_installer: $_pkg_installer" >> $_os_dep
+  echo "cfg repo_installer: $_repo_installer" >> $_os_dep
+  echo "cfg yes: $_yes" >> $_os_dep
+  echo "cfg install: $_install" >> $_os_dep
+  echo "cfg update: $_update" >> $_os_dep
+  echo >> $_os_dep
+  echo "#tt Packages needed for this project" >> $_os_dep
+  echo "pkg: " >> $_os_dep
+  echo >> $_os_dep
+  echo "#tt Repositories needed Required" >> $_os_dep
+  echo "repo: $_repo" >> $_os_dep
+}
+
 ################################################################################
 ## Process program parameters
 ################################################################################
@@ -183,8 +255,12 @@ while [ "$1" != "" ] ; do
     "--restarted")
       RECURSIVE=1
       ;;
+    "--create")
+      setup_dependency $2
+      clean_exit 0
+      ;;
     "-?")
-      echo "Usage: $0 [v] <--confirm>"
+      echo "Usage: $0 [v] <--confirm|--create [OS]>"
       clean_exit 0
       ;;
     *)
@@ -194,6 +270,25 @@ while [ "$1" != "" ] ; do
   esac
   shift
 done
+
+
+################################################################################
+## Verify that dependencies are available
+################################################################################
+# Test if requirements folder is found!
+if [ ! -e $REQ_DIR ] ; then
+  echo
+  echo "ERROR: No dependencies folder found!"
+  echo
+  clean_exit 1
+else
+  ls $REQ_DIR/*.req &>/dev/null
+  if [ $? -ne 0 ] ; then
+    echo
+    echo "WARNING: No dependency files found! (e.g. $OS_NAME.req)"
+    echo
+  fi
+fi
 
 ################################################################################
 ## Verify that the script is allowed to proceed
@@ -258,19 +353,24 @@ echo -n "Load requirements for $OS_NAME..."
 pkgs=( )
 repos=( )
 
-if [ -e "$REQ_DIR/$OS_NAME.req" ] ; then
-  pkgs=(  $(cat "$REQ_DIR/$OS_NAME.$REXT" | grep -e "^[ \t]*pkg:.*"  | sed -e "s/^[ \t]*pkg://g") )
-  repos=( $(cat "$REQ_DIR/$OS_NAME.$REXT" | grep -e "^[ \t]*repo:.*" | sed -e "s/^[ \t]*repo://g") )
-  echo "found ${#pkgs[@]} packages and ${#repos[@]} repositories!"
-else
-  echo "none found!"
-  clean_exit 0 "OS: $OS_NAME not supported!"
+# First try to find the specific OS version file rocky-9 or ubuntu-22,....
+if [ -e "$REQ_DIR/$OS_KEY.$REXT" ] ; then
+  _reqFile=$REQ_DIR/$OS_KEY.$REXT
+else # Else try to find the specific OS file rocky or ubuntu,....
+  if [ -e "$REQ_DIR/$OS_NAME.$REXT" ] ; then
+    _reqFile=$REQ_DIR/$OS_NAME.$REXT
+  else
+    echo "none found!"
+    clean_exit 0 "OS: $OS_NAME not supported!"
+  fi
 fi
+pkgs=(  $(cat "$_reqFile" | grep -e "^[ \t]*pkg:.*"  | sed -e "s/^[ \t]*pkg://g") )
+repos=( $(cat "$_reqFile" | grep -e "^[ \t]*repo:.*" | sed -e "s/^[ \t]*repo://g") )
+echo "found ${#pkgs[@]} packages and ${#repos[@]} repositories!"
 
 echo "------------------------------------------------------------------------"
-echo "Configure package and repository installers for $OS_NAME"
+echo "Configure package and repository installers for $OS_NAME $OS_VERSION"
 echo "------------------------------------------------------------------------"
-_reqFile=$REQ_DIR/$OS_NAME.$REXT
 getCFG $_reqFile init
   init="$CFG"
   assert init

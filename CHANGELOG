@@ -3,6 +3,9 @@ prior b7.0.0 are listed in the NIST BGP-SRx repository. This repository does
 focus on the testing aspect.
 
 Version b7.1.2
+  * tools: Generation of the router configuration allows to exclude peering
+           sections using {Peer}, {Peer_1}, ...
+  * brio-examples: Fixed emperiment 910, typo in AS path
   * brio-examples: Renamed router setting in configuration markdown from 
     Evaluation into Validation
   * brio-examples: Made some documentation more clear to understand
@@ -15,6 +18,7 @@ Version b7.1.2
     overwrite the configuration
   * brio-examples: Added netcat to router.sh to simulate a process listening on 
     port 179
+  * Added docs folder containing experiment documentation
   * Added tools folder to provide some helper tools
 Version b7.1.1
   * brio-examples: Fixed start_expX.sh scripts ans start_example.sh script to 

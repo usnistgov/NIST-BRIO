@@ -32,9 +32,9 @@ VALIDATOR_CFG_PARAM=
 ## The validator configuration file
 VALIDATOR_CFG=
 
-## The validator cli parameter to set the validator port. 'srx-server -> 17900' 
+## The validator cli parameter to set the validator port. '-p' 
 VALIDATOR_PORT_PARAM=
-## The default router BGP Port (RFC 4271)
+## The default validator port. 'srx-server -> 17900' 
 VALIDATOR_PORT=
 
 ## The router's cli parameter to set the rpki validation cache port. 

@@ -10,18 +10,18 @@ tested using the operating systems minimal installs.
 
 Comments for this software package:
 ===================================
-* srx-crypto-api 0.3.0.7_release developed and tested under CentOS.
+* srx-crypto-api 0.3.0.7_release developed and tested under CentOS, Rocky 9 and Ubuntu 22.04.
   - requires gcc
   - requires libconfig-devel
   - requires openssl-devel
   - requires uthash-devel
-* bgprpki-io version_b0.7.0.1 developed and tested under Rocky 9.
+* bgprpki-io version_b0.7.0.1 developed and tested under Rocky 9 and Ubuntu 22.04
   - requires gcc
   - requires libconfig-devel
   - requires openssl-devel
   - requires readline-devel
-* examples b0.7.1.2_release developed and tested under under CentOS.
-  Contains example scripts as well as example keys for BIO, SCA, and QSRx.
+* examples b0.7.1.2_release developed and tested under under CentOS, Rocky 9, and Ubuntu 22.04
+  Contains example scripts as well as example keys for BRIO, and SCA.
   - requires epel-release
   - requires sed
   - requires screen
@@ -39,4 +39,4 @@ Comments for this software package:
   - optional python3
 
 -------------------------------------------------------------------------------
-Packaged by BGP-SRx Software Suite Bundler V9.4.2
+Packaged by BGP-SRx Software Suite Bundler V9.4.7
