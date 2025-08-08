@@ -136,7 +136,8 @@ contribute to the project.
 
 ## Authors & Main Contributors
 - Oliver Borchert (Lead)  
-- Kotikalapudi Sriram  
+- Kotikalapudi Sriram
+- Lilia Hannachi
 - Kyehwan Lee  
 - Doug Montgomery  
 
